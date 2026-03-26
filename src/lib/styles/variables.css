@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Open+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+	/* Region colors */
+	--region-americas: #567B57;
+	--region-europe: #A9BDA1;
+	--region-asia-oceania: #EEC7A3;
+	--region-middle-east: #DD9D7C;
+	--region-africa: #D24C4A;
+
+	/* Typography */
+	--font-display: 'Playfair Display', 'Georgia', serif;
+	--font-sans: 'Open Sans', system-ui, -apple-system, sans-serif;
+
+	/* Colors */
+	--bg: #FFFCEF;
+	--text: #1a1a1a;
+	--text-muted: #6b7280;
+	--text-light: #9ca3af;
+	--border: #e0ddd0;
+	--border-light: #eae7da;
+
+	/* Spacing */
+	--space-xs: 0.25rem;
+	--space-sm: 0.5rem;
+	--space-md: 1rem;
+	--space-lg: 2rem;
+	--space-xl: 4rem;
+	--space-2xl: 8rem;
+
+	/* Chart */
+	--chart-grid: #d6d3c6;
+	--chart-axis: #9ca3af;
+	--ruler-color: #c0bdb0;
+}

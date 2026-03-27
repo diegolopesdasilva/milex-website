@@ -3,6 +3,7 @@
 	import Hero from '$lib/components/Hero.svelte';
 	import StackedAreaChart from '$lib/components/StackedAreaChart.svelte';
 	import Legend from '$lib/components/Legend.svelte';
+	import GrowthImpact from '$lib/components/GrowthImpact.svelte';
 
 	import { events as globalEvents } from '$lib/data/events';
 	import { regionalEvents } from '$lib/data/regional-events';
@@ -325,6 +326,15 @@
 			For the second year in a row, military expenditure increased in all five of the world's geographical regions, reflecting heightened geopolitical tensions across the globe. The decade-long growth in global spending can be partly attributed to spending increases in Europe, largely driven by the ongoing Russia–Ukraine war, and in the Middle East, driven by the war in Gaza and wider regional conflicts. Many countries have also committed to raising military spending, which will lead to further global increases in the coming years.
 		</p>
 	</section>
+
+	<!-- Growth impact interactive section -->
+	<div
+		style:width="{streamTailWidth > 0 ? streamTailWidth + 'px' : '60%'}"
+		style:margin-left="{streamTailLeft > 0 ? streamTailLeft + 'px' : 'auto'}"
+		style:margin-right="{streamTailLeft > 0 ? 'auto' : 'auto'}"
+	>
+		<GrowthImpact />
+	</div>
 
 	<footer>
 		<p>Data: SIPRI Military Expenditure Database. All figures in constant 2023 USD.</p>

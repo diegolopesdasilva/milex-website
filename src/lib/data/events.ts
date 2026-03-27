@@ -12,7 +12,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			'With the Soviet Union dissolved, militaries across the world begin deep budget cuts \u2014 the so-called "peace dividend."',
 		context:
-			'Between 1992 and 1996, global military spending fell by more than 30 per cent in real terms. The steepest cuts came in the former Soviet states, but NATO members also reduced their forces substantially.'
+			'Between 1992 and 1998, global military spending fell by roughly a third in real terms. The steepest cuts came in the former Soviet states, but NATO members also reduced their forces substantially.'
 	},
 	{
 		year: 1996,
@@ -20,7 +20,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			"Russia's costly campaign in Chechnya ends amid economic turmoil, with military spending at historic lows.",
 		context:
-			'Russian military expenditure in the mid-1990s was a fraction of Soviet-era levels. The war exposed deep structural weaknesses in the armed forces that would take decades to address.'
+			'Russian military expenditure in the mid-1990s was a fraction of Soviet-era levels. The war exposed deep structural weaknesses in the armed forces, contributing to two decades of largely unreformed Soviet-era military structures.'
 	},
 	{
 		year: 2001,
@@ -28,7 +28,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			'Global military expenditure reverses its post\u2013Cold War decline, led by the US with operations in Afghanistan.',
 		context:
-			'US defence spending rose by 50 per cent in real terms between 2001 and 2010. The wars in Afghanistan and Iraq accounted for trillions of dollars in cumulative spending over two decades.'
+			'Between 2001 and 2009, world military spending rose by an average of 5 per cent per year. Over half of the real-terms increase came from the United States, which also saw major increases from Brazil, China and India.'
 	},
 	{
 		year: 2003,
@@ -36,7 +36,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			'The US-led invasion of Iraq drives a sharp surge in American and Middle Eastern military spending.',
 		context:
-			'At the height of the Iraq War, supplemental war funding alone exceeded the entire defence budget of most European nations. The conflict reshaped Middle Eastern security dynamics for a generation.'
+			'By the end of 2011, the wars in Afghanistan and Iraq had cost the USA over $1.2 trillion in additional military expenditure, with potential long-term total costs estimated as high as $4 trillion.'
 	},
 	{
 		year: 2008,
@@ -44,7 +44,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			'Economic pressures begin to slow military spending growth in Western nations, though Asian spending continues to rise.',
 		context:
-			'While Europe and the Americas began to cut defence budgets, China continued double-digit annual increases. By 2008, East Asian military expenditure had more than doubled since 2000.'
+			'World military expenditure reached $1,531 billion in 2009, a 5.9 per cent real-terms increase despite the global recession. Of 120 countries with data, 65 per cent increased military spending, including 16 of the G20 economies.'
 	},
 	{
 		year: 2011,
@@ -52,7 +52,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			'American military expenditure reaches its post-9/11 peak, then begins a sustained decline through sequestration.',
 		context:
-			'The Budget Control Act of 2011 imposed automatic spending cuts across the US federal budget. Defence spending fell for five consecutive years, dropping by over 15 per cent in real terms.'
+			'World military expenditure in 2011 was $1,738 billion \u2014 2.5 per cent of global GDP. US spending accounted for 41 per cent of the world total, roughly equal to the next 14 countries combined. Nine of the 15 largest spenders cut budgets.'
 	},
 	{
 		year: 2014,
@@ -60,7 +60,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			"Russia's annexation of Crimea triggers renewed European defence commitments and NATO's 2% GDP spending pledge.",
 		context:
-			'At the 2014 Wales Summit, NATO allies committed to spending 2 per cent of GDP on defence within a decade. In 2014, only three allies met the target; by 2024, twenty-three did.'
+			'Eastern Europe rose 8.4 per cent in 2014, while Central Europe broke from post-2008 austerity with a 5.7 per cent increase. At the NATO Wales Summit, allies committed to spending 2 per cent of GDP on defence within a decade.'
 	},
 	{
 		year: 2017,
@@ -68,7 +68,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			'The United States reverses spending cuts, beginning a new phase of military budget increases.',
 		context:
-			'Bipartisan budget deals lifted the sequestration caps, enabling the largest peacetime military budgets in US history. Modernisation of the nuclear triad became a major spending driver.'
+			'World military expenditure in 2017 was $1,739 billion \u2014 the highest since the Cold War, 9.8 per cent above 2008. Central Europe had the largest subregional percentage increase (+12 per cent), driven by the perceived Russian threat.'
 	},
 	{
 		year: 2020,
@@ -76,7 +76,7 @@ export const events: HistoricalEvent[] = [
 		description:
 			"Despite the pandemic's economic toll, most major powers maintain or increase military budgets.",
 		context:
-			'Military spending proved remarkably resilient to the pandemic. While many sectors of government spending were redirected to health, defence budgets were largely protected or increased.'
+			'World military expenditure reached $1,981 billion in 2020, the highest since 1988 and the sixth consecutive annual increase. The global military burden rose to 2.4 per cent of GDP as economies contracted but defence budgets held.'
 	},
 	{
 		year: 2022,
@@ -84,6 +84,6 @@ export const events: HistoricalEvent[] = [
 		description:
 			'The full-scale invasion of Ukraine causes the largest spike in European military spending since the Cold War.',
 		context:
-			'Germany announced a \u20ac100 billion special defence fund within days of the invasion. European military spending rose by 30 per cent between 2021 and 2024, the fastest increase in the post-Cold War era.'
+			'European military spending rose 13 per cent in 2022, with 39 of 43 European countries increasing budgets. Ukraine\u2019s spending rose more than sevenfold, amounting to over a third of its GDP. Global spending reached $2,240 billion.'
 	}
 ];

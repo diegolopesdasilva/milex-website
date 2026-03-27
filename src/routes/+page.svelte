@@ -4,10 +4,19 @@
 	import StackedAreaChart from '$lib/components/StackedAreaChart.svelte';
 	import Legend from '$lib/components/Legend.svelte';
 
-	import { events } from '$lib/data/events';
+	import { events as globalEvents } from '$lib/data/events';
+	import { regionalEvents } from '$lib/data/regional-events';
 	import { getPivotedData, regions } from '$lib/data/expenditure';
 
 	const data = getPivotedData();
+
+	let activeRegion: string | null = $state(null);
+
+	let events = $derived(
+		activeRegion && regionalEvents[activeRegion]
+			? regionalEvents[activeRegion]
+			: globalEvents
+	);
 
 	const chartHeight = 12000;
 	const firstYear = data[0].year;
@@ -20,8 +29,20 @@
 		rulerYears.push(y);
 	}
 
-	// Track visibility per event card
-	let visible: boolean[] = $state(events.map(() => false));
+	// Track visibility per event card — reset when events change
+	let visible: boolean[] = $state(globalEvents.map(() => false));
+	$effect(() => {
+		// When events change (region switch), reset visibility and re-measure
+		visible = events.map(() => false);
+		// Re-observe new cards and recalculate stream edges after DOM updates
+		requestAnimationFrame(() => {
+			if (chartSection) {
+				setupObserver();
+				measureStreamEdges();
+				measureStreamTail();
+			}
+		});
+	});
 	let chartSection: HTMLElement;
 	let streamTailWidth = $state(0);
 	let streamTailLeft = $state(0);
@@ -35,10 +56,12 @@
 	// Per-event stream edge positions for shape-following text (multiple y samples)
 	let contextShapes: { offsets: number[] }[] = $state([]);
 
-	onMount(() => {
-		const cards = chartSection.querySelectorAll('.event-overlay-left [data-event-idx]');
+	let currentObserver: IntersectionObserver | null = null;
 
-		const observer = new IntersectionObserver(
+	function setupObserver() {
+		if (currentObserver) currentObserver.disconnect();
+		const cards = chartSection.querySelectorAll('.event-overlay-left [data-event-idx]');
+		currentObserver = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
 					const idx = Number((entry.target as HTMLElement).dataset.eventIdx);
@@ -50,10 +73,13 @@
 				threshold: 0
 			}
 		);
-
 		for (const card of cards) {
-			observer.observe(card);
+			currentObserver.observe(card);
 		}
+	}
+
+	onMount(() => {
+		setupObserver();
 
 		// Track scroll to determine active year — update ruler labels via DOM directly
 		let rafId = 0;
@@ -90,32 +116,38 @@
 		});
 
 		return () => {
-			observer.disconnect();
+			if (currentObserver) currentObserver.disconnect();
 			window.removeEventListener('scroll', handleScroll);
 		};
 	});
 
+	// Helper: get the total spending for a year, respecting activeRegion filter
+	function getYearTotal(row: any, regionFilter: string | null): number {
+		if (regionFilter) return row[regionFilter] || 0;
+		let t = 0;
+		for (const r of regions) t += row[r] || 0;
+		return t;
+	}
+
+	// Helper: compute the max half-total across all years for the current filter
+	function getMaxHalf(regionFilter: string | null): number {
+		let maxHalf = 0;
+		for (const d of data) {
+			const t = getYearTotal(d, regionFilter);
+			if (t / 2 > maxHalf) maxHalf = t / 2;
+		}
+		return maxHalf;
+	}
+
 	function measureStreamTail() {
-		// Compute stream tail width from data (avoids expensive SVG path sampling)
 		const chartCol = chartSection?.querySelector('.chart-column') as HTMLElement;
 		if (!chartCol) return;
 		const chartColW = chartCol.clientWidth;
 		const chartColRect = chartCol.getBoundingClientRect();
 
-		// Find the last year's total spending
 		const lastRow = data[data.length - 1];
-		let lastTotal = 0;
-		for (const r of regions) lastTotal += (lastRow as any)[r] || 0;
-
-		// Find global max half-total
-		let globalMaxHalf = 0;
-		for (const d of data) {
-			let t = 0;
-			for (const r of regions) t += (d as any)[r] || 0;
-			if (t / 2 > globalMaxHalf) globalMaxHalf = t / 2;
-		}
-
-		const absExtent = globalMaxHalf * 1.5;
+		const lastTotal = getYearTotal(lastRow, activeRegion);
+		const absExtent = getMaxHalf(activeRegion) * 1.5;
 		const padL = 20, padR = 20;
 		const plotW = chartColW - padL - padR;
 
@@ -141,19 +173,15 @@
 		}, 100);
 	}
 
-	function getStreamRightEdge(year: number, absExtent: number, padL: number, plotW: number): number {
-		// Interpolate between data points for fractional years
+	function getStreamRightEdge(year: number, absExtent: number, padL: number, plotW: number, regionFilter: string | null): number {
 		const floorYear = Math.floor(year);
 		const ceilYear = Math.ceil(year);
 		const frac = year - floorYear;
 		const rowA = data.find(d => d.year === floorYear);
 		const rowB = data.find(d => d.year === ceilYear);
 		if (!rowA) return padL + plotW * 0.7;
-		let totalA = 0, totalB = 0;
-		for (const r of regions) {
-			totalA += (rowA as any)[r] || 0;
-			totalB += (rowB ? (rowB as any)[r] : (rowA as any)[r]) || 0;
-		}
+		const totalA = getYearTotal(rowA, regionFilter);
+		const totalB = rowB ? getYearTotal(rowB, regionFilter) : totalA;
 		const total = totalA + (totalB - totalA) * frac;
 		const halfTotal = total / 2;
 		return padL + ((halfTotal + absExtent) / (2 * absExtent)) * plotW;
@@ -164,36 +192,26 @@
 		if (!chartCol) return;
 		const chartColW = chartCol.clientWidth;
 
-		let globalMaxHalf = 0;
-		for (const d of data) {
-			let t = 0;
-			for (const r of regions) t += (d as any)[r] || 0;
-			if (t / 2 > globalMaxHalf) globalMaxHalf = t / 2;
-		}
-
-		const absExtent = globalMaxHalf * 1.5;
+		const absExtent = getMaxHalf(activeRegion) * 1.5;
 		const padL = 20, padR = 20;
 		const plotW = chartColW - padL - padR;
 
 		const positions: { x: number; year: number }[] = [];
 		const shapes: { offsets: number[] }[] = [];
 
-		// Each line of text ≈ 1.7rem * 1.05rem font ≈ ~28px.
-		// In chart coordinates, each year = chartHeight / yearRange px
 		const pxPerYear = chartHeight / yearRange;
-		const lineHeightPx = 28; // approx line height in pixels
-		const lineHeightYears = lineHeightPx / pxPerYear; // fraction of a year per line
-		const numLines = 10; // sample enough lines
+		const lineHeightPx = 30;
+		const lineHeightYears = lineHeightPx / pxPerYear;
+		const numLines = 10;
 
 		for (const event of events) {
-			const baseEdge = getStreamRightEdge(event.year, absExtent, padL, plotW);
+			const baseEdge = getStreamRightEdge(event.year, absExtent, padL, plotW, activeRegion);
 			positions.push({ x: baseEdge, year: event.year });
 
-			// Compute edge at each line offset
 			const offsets: number[] = [];
 			for (let line = 0; line < numLines; line++) {
 				const sampleYear = event.year + line * lineHeightYears;
-				const edge = getStreamRightEdge(sampleYear, absExtent, padL, plotW);
+				const edge = getStreamRightEdge(sampleYear, absExtent, padL, plotW, activeRegion);
 				offsets.push(edge);
 			}
 			shapes.push({ offsets });
@@ -234,7 +252,7 @@
 	<Hero />
 
 	<section class="legend-bar">
-		<Legend />
+		<Legend {activeRegion} onRegionClick={(r) => { activeRegion = r; }} />
 	</section>
 
 	<section class="chart-section" bind:this={chartSection}>
@@ -256,7 +274,7 @@
 
 		<!-- Chart column with overlaid annotations on both sides -->
 		<div class="chart-column">
-			<StackedAreaChart {data} {events} heightPx={chartHeight} />
+			<StackedAreaChart {data} {events} heightPx={chartHeight} {activeRegion} />
 
 			<!-- Left overlay: title + description (year is on the ruler) -->
 			<div class="event-overlay-left">
@@ -274,29 +292,18 @@
 				{/each}
 			</div>
 
-			<!-- Right overlay: context text, each line follows stream curve -->
+			<!-- Right overlay: context text, positioned at fixed gap from stream edge -->
 			{#each events as event, i}
 				{@const pct = yearToPercent(event.year)}
-				{@const shape = contextShapes[i]}
-				{@const minEdge = shape ? Math.min(...shape.offsets) : (contextPositions[i]?.x ?? 0)}
+				{@const edgeX = contextPositions[i]?.x ?? 0}
 				{@const gap = 40}
 				<div
 					class="context-card"
 					class:visible={visible[i]}
 					style:top="{pct}%"
-					style:left="{minEdge}px"
-					style:width="calc(100% - {minEdge + 40}px)"
+					style:left="{edgeX + gap}px"
+					style:width="calc(100% - {edgeX + gap + 20}px)"
 				>
-					{#if shape}
-						{@const lineH = 30}
-						{@const totalH = shape.offsets.length * lineH}
-						<div
-							class="shape-spacer"
-							style:width="{Math.max(...shape.offsets) - minEdge + gap}px"
-							style:height="{totalH}px"
-							style:shape-outside="polygon({shape.offsets.map((x, li) => `${x - minEdge + gap}px ${li * lineH}px`).join(', ')}, {shape.offsets[shape.offsets.length - 1] - minEdge + gap}px {totalH}px, 0px {totalH}px, 0px 0px)"
-						></div>
-					{/if}
 					<p class="context-text">{event.context}</p>
 				</div>
 			{/each}
@@ -466,11 +473,6 @@
 
 	.context-card.visible {
 		opacity: 1;
-	}
-
-	.shape-spacer {
-		float: left;
-		shape-margin: 0px;
 	}
 
 	.context-text {

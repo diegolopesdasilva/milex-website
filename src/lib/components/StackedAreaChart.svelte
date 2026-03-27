@@ -12,22 +12,37 @@
 	let {
 		data,
 		events = [],
-		heightPx = 8000
+		heightPx = 8000,
+		activeRegion = null
 	}: {
 		data: YearRow[];
 		events?: HistoricalEvent[];
 		heightPx?: number;
+		activeRegion?: string | null;
 	} = $props();
+
+	// When a region is selected, zero out the others so the stream morphs
+	let filteredData = $derived.by(() => {
+		if (!activeRegion) return data;
+		return data.map((row) => {
+			const newRow: YearRow = { year: row.year };
+			for (const r of regions) {
+				(newRow as any)[r] = r === activeRegion ? (row as any)[r] : 0;
+			}
+			return newRow;
+		});
+	});
 
 	const stackGen = stack<YearRow>()
 		.keys([...regions])
 		.order(stackOrderInsideOut)
 		.offset(stackOffsetSilhouette);
 
-	let stackedData = $derived(stackGen(data));
+	let stackedData = $derived(stackGen(filteredData));
 
-	// Symmetric X extent — stream centered, extra space on right for text
+	// Symmetric X extent — when filtering, rescale to fill same width
 	let xExtent = $derived.by(() => {
+		// Compute extent from the current (possibly filtered) stacked data
 		let min = Infinity;
 		let max = -Infinity;
 		for (const series of stackedData) {
@@ -41,7 +56,6 @@
 	});
 
 	// Reverse yDomain so LayerCake maps 1992→top, 2024→bottom
-	// LayerCake reverses y by default (SVG convention), so we flip the domain
 	let yDomain = $derived.by(() => {
 		if (data.length === 0) return [2024, 1992];
 		return [data[data.length - 1].year, data[0].year];
@@ -50,7 +64,7 @@
 
 <div class="stream-chart" style:height="{heightPx}px">
 	<LayerCake
-		data={data}
+		data={filteredData}
 		x={[0, 1]}
 		y="year"
 		xScale={scaleLinear()}
@@ -60,7 +74,7 @@
 		padding={{ top: 60, right: 20, bottom: 60, left: 20 }}
 	>
 		<Svg>
-			<AreaLayer {stackedData} colors={regionColors} />
+			<AreaLayer {stackedData} colors={regionColors} {activeRegion} />
 			<Annotation {events} />
 		</Svg>
 	</LayerCake>

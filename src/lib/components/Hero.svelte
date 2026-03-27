@@ -4,6 +4,7 @@
 <section class="hero">
 	<div class="hero-content">
 		<h1>Global Military<br />Expenditures:<br /><span class="subtitle-line">A Visual History 1992–2024</span></h1>
+		<p class="byline">By <a href="https://diegolopesdasilva.github.io/website/" target="_blank" rel="noopener">Diego Lopes da Silva</a></p>
 		<div class="scroll-hint">
 			<span>Scroll to explore</span>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -44,6 +45,27 @@
 		font-weight: 300;
 		color: var(--text);
 		font-size: 0.52em;
+	}
+
+	.byline {
+		font-family: var(--font-sans);
+		font-size: 1.05rem;
+		font-weight: 300;
+		color: var(--text-light);
+		margin: 0 0 var(--space-xl);
+		letter-spacing: 0.02em;
+	}
+
+	.byline a {
+		color: var(--text-muted);
+		text-decoration: none;
+		border-bottom: 1px solid var(--border-light);
+		transition: color 0.2s ease, border-color 0.2s ease;
+	}
+
+	.byline a:hover {
+		color: var(--text);
+		border-color: var(--text-muted);
 	}
 
 	.scroll-hint {

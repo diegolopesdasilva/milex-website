@@ -3,64 +3,66 @@
 	import { cubicOut } from 'svelte/easing';
 
 	// ── Alptekin & Levine (2012) ──
-	// "Military Expenditure and Economic Growth: A Meta-Analysis"
-	// European Journal of Political Economy 28(4), 636–650
-	//
-	// 32 studies · 169 estimates
-	// RE pooled mean PCC = 0.066  [95% CI: 0.037, 0.095]
-	// FE pooled mean PCC = 0.056
-	// Distribution: 40% negative, 60% positive
-	// No publication bias: FAT β₀ = 0.112 (t = 0.43, p > 0.05)
-	// Genuine effect confirmed: PET β₁ = 0.099 (t = 3.48, p < 0.01, HLM)
-	// Heterogeneity: Q(168) = 593.1, p < 0.001  → very high between-study variance
+	// 32 studies · 169 estimates · 77 statistically significant
+	// RE pooled PCC = 0.066 [0.037, 0.095]
+	// No publication bias (FAT β₀ = 0.112, t = 0.43)
+	// Genuine effect (PET β₁ = 0.099, t = 3.48)
+	// Q(168) = 593.1 → high heterogeneity
 
 	const RE_MEAN = 0.066;
-	const RE_CI_LO = 0.037;
-	const RE_CI_HI = 0.095;
-	const STUDY_SD = 0.25; // estimated from spread of named study-level PCCs
 
-	// Only statistically significant estimates:
-	// 40% of 169 are negative (~68), of which 38% significant → ~26
-	// 60% of 169 are positive (~101), of which ~50% significant → ~51
-	// Total significant: ~77
-	const N_SIG_NEG = 26;
-	const N_SIG_POS = 51;
-	const N_DOTS = N_SIG_NEG + N_SIG_POS; // 77
-
-	// Named study-level average PCCs from Table 1
-	// above = true → label placed above the dot
-	const named = [
-		{ label: 'Benoit (1978)',        pcc:  0.383, above: true  },
-		{ label: 'Deger & Smith (1983)', pcc:  0.131, above: false },
-		{ label: 'Looney (1989)',        pcc: -0.284, above: false },
-		{ label: 'Yakovlev (2007)',      pcc: -0.148, above: true  },
-		{ label: 'Antonakis (1997)',     pcc: -0.456, above: true  },
-	];
-
-	// ── Moderator coefficients from HLM meta-regression, Table 4 (specific model) ──
-	// Baseline: 1960s–80s data, developing countries → RE mean ≈ 0.066
+	// ── Types ──
 	type Period  = '1950s' | '1960s–80s' | '1990s+';
 	type Country = 'developing' | 'developed';
+	type PeriodFilter  = 'all' | Period;
+	type CountryFilter = 'both' | Country;
 
-	const MOD_PERIOD: Record<Period, number> = {
-		'1950s':    0.253,
-		'1960s–80s': 0,
-		'1990s+':  -0.226
-	};
-	const MOD_COUNTRY: Record<Country, number> = {
-		developing: 0,
-		developed:  0.185
-	};
+	// ── Moderator coefficients (HLM, Table 4 col 6) ──
+	const MOD_PERIOD:  Record<Period, number>  = { '1950s': 0.253, '1960s–80s': 0, '1990s+': -0.226 };
+	const MOD_COUNTRY: Record<Country, number> = { developing: 0, developed: 0.185 };
 
-	let period:  Period  = $state('1960s–80s');
-	let country: Country = $state('developing');
+	// Approximate SEs derived from significance levels in Table 4
+	const SE_BASE = 0.015;
+	const SE_P: Record<PeriodFilter, number>  = { all: 0, '1950s': 0.115, '1960s–80s': 0, '1990s+': 0.103 };
+	const SE_C: Record<CountryFilter, number> = { both: 0, developing: 0, developed: 0.062 };
 
-	let rawCtx = $derived(RE_MEAN + MOD_PERIOD[period] + MOD_COUNTRY[country]);
+	// ── Filter state ──
+	let periodFilter:  PeriodFilter  = $state('all');
+	let countryFilter: CountryFilter = $state('both');
 
-	const tweenedCtx = tweened(RE_MEAN, { duration: 500, easing: cubicOut });
-	$effect(() => { tweenedCtx.set(rawCtx); });
+	// ── Contextual estimate + CI ──
+	let pMod   = $derived(periodFilter === 'all' ? 0 : MOD_PERIOD[periodFilter]);
+	let cMod   = $derived(countryFilter === 'both' ? 0 : MOD_COUNTRY[countryFilter]);
+	let rawCtx = $derived(RE_MEAN + pMod + cMod);
+	let ctxSE  = $derived(Math.sqrt(SE_BASE ** 2 + SE_P[periodFilter] ** 2 + SE_C[countryFilter] ** 2));
+	let ciLo   = $derived(rawCtx - 1.96 * ctxSE);
+	let ciHi   = $derived(rawCtx + 1.96 * ctxSE);
 
-	// ── Seeded RNG → reproducible dot positions ──
+	// ── Tweened values ──
+	const tCtx  = tweened(RE_MEAN, { duration: 500, easing: cubicOut });
+	const tCILo = tweened(RE_MEAN - 1.96 * SE_BASE, { duration: 500, easing: cubicOut });
+	const tCIHi = tweened(RE_MEAN + 1.96 * SE_BASE, { duration: 500, easing: cubicOut });
+	$effect(() => { tCtx.set(rawCtx); tCILo.set(ciLo); tCIHi.set(ciHi); });
+
+	// ── SVG layout (defined early so xs() is available for $derived) ──
+	const W = 800, H_SWARM = 248, H_GAUGE = 80;
+	const ML = 35, MR = 35, MT = 32, MB = 46;
+	const PW = W - ML - MR;
+	const CY = MT + (H_SWARM - MT - MB) / 2 + 6;
+	const X_MIN = -0.65, X_MAX = 0.65;
+	function xs(v: number): number { return ML + ((v - X_MIN) / (X_MAX - X_MIN)) * PW; }
+	const TICKS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];
+	const AX_S = H_SWARM - MB + 8;
+	const AX_G = H_GAUGE - 20;
+	const GCY = 34; // gauge vertical centre for CI line
+
+	// ── Derived gauge SVG values ──
+	let ptX    = $derived(xs($tCtx));
+	let loX    = $derived(xs($tCILo));
+	let hiX    = $derived(xs($tCIHi));
+	let ptCol  = $derived($tCtx < 0 ? 'var(--region-africa)' : 'var(--region-americas)');
+
+	// ── Seeded RNG ──
 	function mulberry32(seed: number) {
 		let a = seed;
 		return () => {
@@ -71,56 +73,54 @@
 		};
 	}
 	const rng = mulberry32(31337);
-
 	function gauss(): number {
-		const u = Math.max(rng(), 1e-10);
-		const v = rng();
+		const u = Math.max(rng(), 1e-10), v = rng();
 		return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 	}
 
-	// Simulate only statistically significant estimates.
-	// Significant negative: drawn from left tail (mean ~ −0.22, narrower spread)
-	// Significant positive: drawn from right tail (mean ~ +0.20, narrower spread)
-	function generateSigDots() {
-		const out: { pcc: number; jy: number }[] = [];
-		// Significant negative estimates
-		for (let i = 0; i < N_SIG_NEG; i++) {
-			let pcc: number;
-			do { pcc = -0.22 + 0.14 * gauss(); } while (pcc >= 0 || pcc < -0.63);
-			out.push({ pcc, jy: (rng() - 0.5) * 82 });
-		}
-		// Significant positive estimates
-		for (let i = 0; i < N_SIG_POS; i++) {
-			let pcc: number;
-			do { pcc = 0.20 + 0.14 * gauss(); } while (pcc <= 0 || pcc > 0.63);
-			out.push({ pcc, jy: (rng() - 0.5) * 82 });
-		}
-		return out;
-	}
-	const dots = generateSigDots();
+	// ── Generate 77 significant dots with period/country attributes ──
+	interface Dot { pcc: number; jy: number; period: Period; country: Country }
 
-	// ── SVG dimensions ──
-	const W = 800;
-	const H_SWARM = 248;
-	const H_GAUGE = 92;
-	const ML = 35, MR = 35, MT = 32, MB = 46;
-	const PW = W - ML - MR;
-	const CY  = MT + (H_SWARM - MT - MB) / 2 + 6;   // dot-cloud centre Y
+	const dotGroups: { period: Period; country: Country; n: number }[] = [
+		{ period: '1950s',     country: 'developing', n: 5  },
+		{ period: '1950s',     country: 'developed',  n: 3  },
+		{ period: '1960s–80s', country: 'developing', n: 18 },
+		{ period: '1960s–80s', country: 'developed',  n: 14 },
+		{ period: '1990s+',    country: 'developing', n: 20 },
+		{ period: '1990s+',    country: 'developed',  n: 17 },
+	]; // total = 77
 
-	const X_MIN = -0.65, X_MAX = 0.65;
-	function xs(v: number): number {
-		return ML + ((v - X_MIN) / (X_MAX - X_MIN)) * PW;
+	const allDots: Dot[] = [];
+	for (const g of dotGroups) {
+		const mean = RE_MEAN + MOD_PERIOD[g.period] + MOD_COUNTRY[g.country];
+		for (let i = 0; i < g.n; i++) {
+			allDots.push({
+				pcc: Math.max(-0.63, Math.min(0.63, mean + 0.14 * gauss())),
+				jy: (rng() - 0.5) * 82,
+				period: g.period,
+				country: g.country,
+			});
+		}
 	}
 
-	const TICKS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];
-	const AX_S  = H_SWARM - MB + 8;   // x-axis y of swarm
-	const AX_G  = H_GAUGE - 30;       // x-axis y of gauge
+	// Named studies with period/country attributes
+	const named: (Dot & { label: string; above: boolean })[] = [
+		{ label: 'Benoit (1978)',        pcc:  0.383, above: true,  jy: 0, period: '1950s',     country: 'developing' },
+		{ label: 'Deger & Smith (1983)', pcc:  0.131, above: false, jy: 0, period: '1960s–80s', country: 'developing' },
+		{ label: 'Looney (1989)',        pcc: -0.284, above: false, jy: 0, period: '1960s–80s', country: 'developing' },
+		{ label: 'Yakovlev (2007)',      pcc: -0.148, above: true,  jy: 0, period: '1990s+',    country: 'developing' },
+		{ label: 'Antonakis (1997)',     pcc: -0.456, above: true,  jy: 0, period: '1990s+',    country: 'developing' },
+	];
 
-	// ── Gauge pointer (derived so they're valid in template) ──
-	let pointerX   = $derived(xs($tweenedCtx));
-	let pointerCol = $derived($tweenedCtx < 0 ? 'var(--region-africa)' : 'var(--region-americas)');
+	// ── Visibility ──
+	function isVis(d: { period: Period; country: Country }): boolean {
+		return (periodFilter === 'all' || d.period === periodFilter)
+			&& (countryFilter === 'both' || d.country === countryFilter);
+	}
 
-	// ── Interpretation text ──
+	let visCount = $derived(allDots.filter(d => isVis(d)).length);
+
+	// ── Interpretation ──
 	function interp(v: number): string {
 		if (v >  0.20) return 'Studies of this type tend to find a <b>clearly positive</b> association — higher military spending linked to faster growth.';
 		if (v >  0.05) return 'Studies of this type tend to find a <b>weakly positive</b> association — slightly higher growth with higher spending.';
@@ -144,17 +144,43 @@
 			Where you look, and when, matters enormously.
 		</p>
 
+		<!-- ══ Filters (shared by both panels) ══ -->
+		<div class="filters">
+			<div class="filter-group">
+				<span class="filter-label">Time period of data</span>
+				<div class="btn-group">
+					<button class="tog" class:active={periodFilter === 'all'}
+						onclick={() => periodFilter = 'all'}>All</button>
+					{#each (['1950s', '1960s–80s', '1990s+'] as Period[]) as p}
+						<button class="tog" class:active={periodFilter === p}
+							onclick={() => periodFilter = p}>{p}</button>
+					{/each}
+				</div>
+			</div>
+			<div class="filter-group">
+				<span class="filter-label">Country sample</span>
+				<div class="btn-group">
+					<button class="tog" class:active={countryFilter === 'both'}
+						onclick={() => countryFilter = 'both'}>Both</button>
+					<button class="tog" class:active={countryFilter === 'developing'}
+						onclick={() => countryFilter = 'developing'}>Developing</button>
+					<button class="tog" class:active={countryFilter === 'developed'}
+						onclick={() => countryFilter = 'developed'}>Developed</button>
+				</div>
+			</div>
+		</div>
+
 		<!-- ══ Dot swarm ══ -->
 		<div class="chart-block">
 			<p class="chart-label">
-				77 statistically significant estimates across 32 studies
+				{visCount} of 77 statistically significant estimates shown
 				<span class="chart-sublabel">— vertical position is random jitter for readability; only horizontal position (PCC) carries meaning</span>
 			</p>
 			<svg
 				viewBox="0 0 {W} {H_SWARM}"
 				preserveAspectRatio="xMidYMid meet"
 				class="chart-svg"
-				aria-label="Dot distribution of 169 PCC estimates"
+				aria-label="Dot distribution of significant PCC estimates"
 			>
 				<!-- Zone shading -->
 				<rect x={ML} y={MT} width={xs(0) - ML} height={H_SWARM - MT - MB}
@@ -172,18 +198,20 @@
 				<text x={(xs(0) + W - MR) / 2} y={MT - 10}
 					text-anchor="middle" class="zone-label pos">Beneficial to growth →</text>
 
-				<!-- Simulated dots -->
-				{#each dots as d}
+				<!-- Simulated dots (filtered via opacity) -->
+				{#each allDots as d, i (i)}
 					<circle
 						cx={xs(d.pcc)} cy={CY + d.jy}
 						r={2.8}
 						fill={d.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
-						opacity={0.35}
+						opacity={isVis(d) ? 0.45 : 0.04}
+						class="dot"
 					/>
 				{/each}
 
-				<!-- Named study dots with labels -->
+				<!-- Named study dots with labels (filtered) -->
 				{#each named as s}
+					{@const vis = isVis(s)}
 					{@const lx = xs(s.pcc)}
 					{@const ly = CY}
 					{@const col = s.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
@@ -191,12 +219,15 @@
 					{@const lineY1 = s.above ? ly - 7  : ly + 7}
 					{@const lineY2 = s.above ? ly - 20 : ly + 20}
 					<circle cx={lx} cy={ly} r={5.5}
-						fill={col} opacity={0.92}
-						stroke="var(--bg)" stroke-width="1.8"/>
+						fill={col} opacity={vis ? 0.92 : 0.06}
+						stroke="var(--bg)" stroke-width="1.8"
+						class="dot"/>
 					<line x1={lx} x2={lx} y1={lineY1} y2={lineY2}
-						stroke={col} stroke-width="1" opacity="0.65"/>
+						stroke={col} stroke-width="1" opacity={vis ? 0.65 : 0.04}
+						class="dot"/>
 					<text x={lx} y={labelY}
-						text-anchor="middle" class="study-label" fill={col}>{s.label}</text>
+						text-anchor="middle" class="study-label" fill={col}
+						opacity={vis ? 1 : 0.06}>{s.label}</text>
 				{/each}
 
 				<!-- X-axis -->
@@ -215,66 +246,65 @@
 			</svg>
 		</div>
 
-		<!-- ══ Interactive context ══ -->
+		<!-- ══ Meta-regression estimate with CI ══ -->
 		<div class="context-block">
-			<p class="chart-label">How does context shift the estimated effect?</p>
-			<p class="context-sub">
-				These sliders use HLM meta-regression coefficients from Table&thinsp;4 of the paper
-				to show how the pooled estimate shifts with study characteristics.
-			</p>
+			<p class="chart-label">Meta-regression adjusted estimate with 95% confidence interval</p>
 
-			<div class="filters">
-				<div class="filter-group">
-					<span class="filter-label">Time period of data</span>
-					<div class="btn-group">
-						{#each (['1950s', '1960s–80s', '1990s+'] as Period[]) as p}
-							<button class="tog" class:active={period === p}
-								onclick={() => period = p}>{p}</button>
-						{/each}
-					</div>
-				</div>
-				<div class="filter-group">
-					<span class="filter-label">Country sample</span>
-					<div class="btn-group">
-						<button class="tog" class:active={country === 'developing'}
-							onclick={() => country = 'developing'}>Developing</button>
-						<button class="tog" class:active={country === 'developed'}
-							onclick={() => country = 'developed'}>Developed</button>
-					</div>
-				</div>
-			</div>
-
-			<!-- Gauge on same PCC axis -->
 			<svg
 				viewBox="0 0 {W} {H_GAUGE}"
 				preserveAspectRatio="xMidYMid meet"
 				class="chart-svg gauge-svg"
-				aria-label="Animated pointer showing contextual meta-analytic estimate"
+				aria-label="Forest-plot style meta-regression estimate with confidence interval"
 			>
 				<!-- Zone shading -->
-				<rect x={ML} y={8} width={xs(0) - ML} height={H_GAUGE - 38}
-					fill="var(--region-africa)" opacity="0.05"/>
-				<rect x={xs(0)} y={8} width={W - MR - xs(0)} height={H_GAUGE - 38}
-					fill="var(--region-americas)" opacity="0.05"/>
+				<rect x={ML} y={4} width={xs(0) - ML} height={H_GAUGE - 24}
+					fill="var(--region-africa)" opacity="0.04"/>
+				<rect x={xs(0)} y={4} width={W - MR - xs(0)} height={H_GAUGE - 24}
+					fill="var(--region-americas)" opacity="0.04"/>
+
+				<!-- Zero reference -->
+				<line x1={xs(0)} x2={xs(0)} y1={4} y2={AX_G}
+					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>
 
 				<!-- Axis -->
 				<line x1={ML} x2={W - MR} y1={AX_G} y2={AX_G}
 					stroke="var(--border-light)" stroke-width="1.5"/>
-				<line x1={xs(0)} x2={xs(0)} y1={8} y2={AX_G}
-					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>
 				{#each TICKS as t}
 					<line x1={xs(t)} x2={xs(t)} y1={AX_G - 4} y2={AX_G + 7}
 						stroke="var(--border-light)" stroke-width="1"/>
-					<text x={xs(t)} y={AX_G + 20}
+					<text x={xs(t)} y={AX_G + 18}
 						text-anchor="middle" class="tick-label">{t.toFixed(1)}</text>
 				{/each}
 
-				<!-- Animated pointer (compute in script via $derived) -->
-				<line x1={pointerX} x2={pointerX} y1={28} y2={AX_G - 2}
-					stroke={pointerCol} stroke-width="3" stroke-linecap="round"/>
-				<polygon points="{pointerX},{28} {pointerX - 9},{44} {pointerX + 9},{44}" fill={pointerCol}/>
-				<text x={pointerX} y={18} text-anchor="middle" class="pointer-val" fill={pointerCol}>
-					{$tweenedCtx.toFixed(3)}
+				<!-- CI whisker line -->
+				<line x1={loX} x2={hiX} y1={GCY} y2={GCY}
+					stroke={ptCol} stroke-width="2.5" stroke-linecap="round" class="ci-line"/>
+				<!-- End caps -->
+				<line x1={loX} x2={loX} y1={GCY - 7} y2={GCY + 7}
+					stroke={ptCol} stroke-width="1.8" class="ci-line"/>
+				<line x1={hiX} x2={hiX} y1={GCY - 7} y2={GCY + 7}
+					stroke={ptCol} stroke-width="1.8" class="ci-line"/>
+
+				<!-- Diamond at point estimate -->
+				<polygon
+					points="{ptX},{GCY - 10} {ptX + 8},{GCY} {ptX},{GCY + 10} {ptX - 8},{GCY}"
+					fill={ptCol} class="ci-line"
+				/>
+
+				<!-- Value label -->
+				<text x={ptX} y={GCY - 16}
+					text-anchor="middle" class="pointer-val" fill={ptCol}>
+					{$tCtx.toFixed(3)}
+				</text>
+
+				<!-- CI bounds labels -->
+				<text x={loX} y={GCY - 12}
+					text-anchor="middle" class="ci-bound-label" fill={ptCol}>
+					{$tCILo.toFixed(2)}
+				</text>
+				<text x={hiX} y={GCY - 12}
+					text-anchor="middle" class="ci-bound-label" fill={ptCol}>
+					{$tCIHi.toFixed(2)}
 				</text>
 			</svg>
 
@@ -286,12 +316,12 @@
 		<p class="methodology-note">
 			Based on Alptekin &amp; Levine (2012), "Military Expenditure and Economic Growth: A Meta-Analysis,"
 			<em>European Journal of Political Economy</em> 28(4), 636–650. Of 169 estimates across 32 studies,
-			77 are statistically significant (26 negative, 51 positive). Only these are plotted.
-			Dot positions are simulated from approximate distributions consistent with the reported
-			statistics; named-study dots use actual study-level average PCCs from Table&thinsp;1.
-			The contextual pointer uses HLM meta-regression coefficients from Table&thinsp;4: period dummies
-			(1950s: +0.253; 1990s+: −0.226) and developed-country dummy (+0.185), relative to the 1960s–80s
-			developing-country baseline. No publication bias detected (FAT: β₀ = 0.112, t = 0.43, p &gt; 0.05).
+			77 are statistically significant (26 negative, 51 positive). Only these are plotted, with positions
+			simulated from group-specific distributions shifted by the HLM meta-regression moderator coefficients
+			(Table&thinsp;4): period dummies (1950s: +0.253; 1990s+: −0.226) and developed-country dummy (+0.185).
+			The diamond-and-whisker shows the point estimate and approximate 95% CI, computed by propagating
+			the standard errors of the moderator coefficients. No publication bias detected
+			(FAT: β₀ = 0.112, t = 0.43, p &gt; 0.05).
 			A genuine effect was confirmed (PET: β₁ = 0.099, t = 3.48, p &lt; 0.01).
 		</p>
 	</div>
@@ -332,96 +362,12 @@
 		color: var(--text);
 	}
 
-	/* ── Charts ── */
-	.chart-block,
-	.context-block {
-		margin-top: 3rem;
-	}
-
-	.chart-label {
-		font-family: var(--font-sans);
-		font-size: 0.95rem;
-		font-weight: 500;
-		color: var(--text-muted);
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		margin: 0 0 0.5rem;
-	}
-
-	.chart-sublabel {
-		font-weight: 300;
-		text-transform: none;
-		letter-spacing: 0;
-		color: var(--text-light);
-	}
-
-	.context-sub {
-		font-family: var(--font-sans);
-		font-size: 0.92rem;
-		font-weight: 300;
-		color: var(--text-light);
-		line-height: 1.6;
-		margin: 0 0 1.5rem;
-	}
-
-	.chart-svg {
-		width: 100%;
-		height: auto;
-		display: block;
-	}
-
-	.gauge-svg {
-		margin-top: 1.2rem;
-	}
-
-	/* SVG text classes */
-	:global(.zone-label) {
-		font-family: var(--font-sans);
-		font-size: 11px;
-		font-weight: 500;
-		letter-spacing: 0.03em;
-	}
-	:global(.zone-label.neg) { fill: var(--region-africa); }
-	:global(.zone-label.pos) { fill: var(--region-americas); }
-
-	:global(.mean-label) {
-		font-family: var(--font-sans);
-		font-size: 11px;
-		font-weight: 500;
-		fill: var(--text);
-		letter-spacing: 0.02em;
-	}
-
-	:global(.study-label) {
-		font-family: var(--font-sans);
-		font-size: 10.5px;
-		font-weight: 400;
-	}
-
-	:global(.tick-label) {
-		font-family: var(--font-sans);
-		font-size: 12px;
-		fill: var(--text-muted);
-	}
-
-	:global(.axis-title) {
-		font-family: var(--font-sans);
-		font-size: 12px;
-		fill: var(--text-muted);
-	}
-
-	:global(.pointer-val) {
-		font-family: var(--font-display);
-		font-size: 14px;
-		font-style: italic;
-	}
-
 	/* ── Filters ── */
 	.filters {
 		display: flex;
 		gap: 3rem;
 		flex-wrap: wrap;
-		margin-bottom: 0.5rem;
+		margin: 2.5rem 0 0.5rem;
 	}
 
 	.filter-group {
@@ -465,6 +411,89 @@
 		color: var(--bg);
 		border-color: var(--text);
 		z-index: 1;
+	}
+
+	/* ── Charts ── */
+	.chart-block,
+	.context-block {
+		margin-top: 1.5rem;
+	}
+
+	.chart-label {
+		font-family: var(--font-sans);
+		font-size: 0.95rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		margin: 0 0 0.5rem;
+	}
+
+	.chart-sublabel {
+		font-weight: 300;
+		text-transform: none;
+		letter-spacing: 0;
+		color: var(--text-light);
+	}
+
+	.chart-svg {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	.gauge-svg {
+		margin-top: 0.5rem;
+	}
+
+	/* ── Dot transitions ── */
+	.dot {
+		transition: opacity 0.45s ease;
+	}
+
+	.ci-line {
+		transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	/* ── SVG text ── */
+	:global(.zone-label) {
+		font-family: var(--font-sans);
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.03em;
+	}
+	:global(.zone-label.neg) { fill: var(--region-africa); }
+	:global(.zone-label.pos) { fill: var(--region-americas); }
+
+	:global(.study-label) {
+		font-family: var(--font-sans);
+		font-size: 10.5px;
+		font-weight: 400;
+		transition: opacity 0.45s ease;
+	}
+
+	:global(.tick-label) {
+		font-family: var(--font-sans);
+		font-size: 12px;
+		fill: var(--text-muted);
+	}
+
+	:global(.axis-title) {
+		font-family: var(--font-sans);
+		font-size: 12px;
+		fill: var(--text-muted);
+	}
+
+	:global(.pointer-val) {
+		font-family: var(--font-display);
+		font-size: 14px;
+		font-style: italic;
+	}
+
+	:global(.ci-bound-label) {
+		font-family: var(--font-sans);
+		font-size: 10px;
+		font-weight: 400;
 	}
 
 	/* ── Interpretation text ── */

@@ -21,10 +21,22 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'By 2021, the total cost of the war on terror — including operations in Afghanistan and Iraq — exceeded $2.3 trillion in additional US military expenditure.'
 		},
 		{
+			year: 2009,
+			title: 'US War Spending Peaks',
+			description: 'US military expenditure reached $661 billion \u2014 43 per cent of the world total \u2014 driven by supplemental funding for Afghanistan and Iraq.',
+			context: 'The United States accounted for 65 per cent of the global increase in military spending between 2000 and 2009. Supplemental war funding exceeded $150 billion per year at peak levels.'
+		},
+		{
 			year: 2011,
 			title: 'Budget Control Act',
 			description: 'Sequestration imposes automatic spending cuts, beginning five years of declining US defence budgets.',
 			context: 'US military spending fell by over 15 per cent in real terms between 2011 and 2015. The cuts forced the Pentagon to reduce force size and delay modernisation programmes.'
+		},
+		{
+			year: 2013,
+			title: 'Sequestration Bites',
+			description: 'US spending fell 7.8 per cent under the Budget Control Act \u2014 the steepest annual cut in the post-9/11 era \u2014 while Latin American spending continued to grow.',
+			context: 'Americas military expenditure fell 6.8 per cent overall in 2013. The US decline was driven by withdrawal from Afghanistan and mandatory sequestration cuts, while Honduras and Nicaragua increased spending to combat drug cartels.'
 		},
 		{
 			year: 2017,
@@ -60,16 +72,34 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'European spending fell sharply after 2008 as austerity measures hit defence budgets. Most NATO members spent well below the 2 per cent GDP target.'
 		},
 		{
+			year: 2012,
+			title: 'Austerity Deepens',
+			description: 'Western and Central European spending fell 1.8 per cent, continuing post-crisis cuts that had shrunk budgets by more than 10 per cent since 2008.',
+			context: 'Ten countries \u2014 including Greece, Spain and the UK \u2014 had cut military budgets by more than 10 per cent since 2008. Eastern Europe bucked the trend, rising 7.0 per cent.'
+		},
+		{
 			year: 2014,
 			title: 'Crimea & NATO Pledge',
 			description: 'Russia\'s annexation of Crimea triggers NATO\'s 2 per cent GDP spending commitment.',
 			context: 'At the 2014 Wales Summit, NATO allies pledged to spend 2 per cent of GDP on defence within a decade. In 2014, only three allies met the target.'
 		},
 		{
+			year: 2017,
+			title: 'Trend Reversal',
+			description: 'Western European spending rose for the third consecutive year, up 1.7 per cent, driven by the perceived Russian threat and the fight against ISIS.',
+			context: 'Central Europe had the largest subregional increase at 12 per cent. The sustained growth marked a decisive break from the post-2008 austerity era.'
+		},
+		{
 			year: 2022,
 			title: 'Russia\u2013Ukraine War',
 			description: 'The full-scale invasion of Ukraine causes a historic surge in European military spending.',
 			context: 'European spending rose 13 per cent in 2022, with 39 of 43 European countries increasing budgets. Germany announced a \u20ac100 billion special defence fund within days of the invasion.'
+		},
+		{
+			year: 2023,
+			title: 'Europe Rearms',
+			description: 'European military spending rose 16 per cent to $588 billion, with 39 of 43 countries increasing budgets.',
+			context: 'Ten NATO European members reached the 2 per cent of GDP target \u2014 the highest number since the target was set in 2014. Poland announced plans to raise its burden to 4 per cent of GDP.'
 		}
 	],
 
@@ -93,16 +123,34 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'By 2008, East Asian military expenditure had more than doubled since 2000. China\'s uninterrupted military spending increases, beginning in the mid-1990s, reshaped the regional balance.'
 		},
 		{
+			year: 2012,
+			title: 'China\u2019s First Aircraft Carrier',
+			description: 'China commissioned its first aircraft carrier as Chinese spending rose 7.8 per cent. East Asian military expenditure had now risen for 23 consecutive years.',
+			context: 'The carrier represented a milestone in China\u2019s naval modernisation. Across the region, South East Asian states also increased spending amid growing maritime tensions in the South China Sea.'
+		},
+		{
 			year: 2014,
 			title: 'Maritime Tensions Escalate',
 			description: 'Territorial disputes in the South and East China Seas drive regional military buildups.',
 			context: 'Asian and Oceanian military expenditure rose for the 25th consecutive year. Japan began reinterpreting its pacifist constitution to allow greater military activities.'
 		},
 		{
+			year: 2019,
+			title: 'India Becomes Third-Largest Spender',
+			description: 'Indian military expenditure reached $71.1 billion, overtaking Russia for the first time as the world\u2019s third-largest spender.',
+			context: 'Spending rose 3.6 per cent across the region in 2019. China\u2019s estimated expenditure reached $261 billion \u2014 85 per cent higher than in 2010.'
+		},
+		{
 			year: 2022,
 			title: 'Indo-Pacific Buildup',
 			description: 'Geopolitical rivalry with China drives historic spending increases across the Indo-Pacific.',
 			context: 'Japan surpassed its longstanding 1 per cent of GDP cap for the third year and announced plans to reach 2 per cent by 2027. Australia, India and Taiwan all cited China tensions as a driver.'
+		},
+		{
+			year: 2023,
+			title: 'Japan\u2019s Historic Buildup',
+			description: 'Japanese spending rose 11 per cent \u2014 the largest year-on-year increase since 1972 \u2014 as China\u2019s spending grew for the 34th consecutive year.',
+			context: 'Chinese military expenditure reached $296 billion in 2023. Regional spending rose 4.4 per cent overall, with major increases also in South Korea and the Philippines.'
 		}
 	],
 
@@ -112,6 +160,12 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			title: 'Post\u2013Gulf War',
 			description: 'The aftermath of the 1991 Gulf War sustains elevated spending across the region.',
 			context: 'Kuwait, Saudi Arabia and other Gulf states invested heavily in military modernisation following Iraq\'s invasion of Kuwait.'
+		},
+		{
+			year: 2009,
+			title: 'Oil-Fuelled Spending',
+			description: 'Regional military expenditure rose 7.1 per cent, driven by high oil revenues and the wars in Iraq and Afghanistan.',
+			context: 'Gulf states invested heavily in modernisation and arms imports. Saudi Arabia, the UAE and Algeria led regional increases as oil prices remained elevated.'
 		},
 		{
 			year: 2003,
@@ -132,10 +186,22 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'Saudi Arabia\'s spending fell 16 per cent in 2017 as oil revenues declined. The cuts were temporary — spending rebounded as oil prices recovered.'
 		},
 		{
+			year: 2019,
+			title: 'Saudi Spending Plunges',
+			description: 'Saudi Arabia\u2019s military spending fell 16 per cent, dropping from third- to fifth-largest spender globally.',
+			context: 'The Middle East as a whole fell 7.5 per cent. The Saudi decline reflected both lower oil revenues and a reassessment of the costly Yemen intervention.'
+		},
+		{
 			year: 2022,
 			title: 'Gaza War & Regional Tensions',
 			description: 'The Israel\u2013Hamas war and wider regional conflicts drive a sharp spending increase.',
 			context: 'Israel\'s spending rose 24 per cent in 2023 and a further 65 per cent in 2024. Saudi Arabia increased spending 16 per cent in 2022 as oil revenues surged.'
+		},
+		{
+			year: 2023,
+			title: 'Israel\u2013Hamas War',
+			description: 'The conflict in Gaza drove a 24 per cent increase in Israeli military spending. The Middle East rose 9.0 per cent to $200 billion.',
+			context: 'It was the first major regional increase in years. Saudi Arabia also raised spending as high oil prices enabled larger budgets across the Gulf.'
 		}
 	],
 
@@ -159,16 +225,34 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'African military spending reached $27.4 billion in 2009, a 6.5 per cent real increase. Oil revenues funded modernisation in Algeria, Angola, Nigeria and Libya.'
 		},
 		{
+			year: 2013,
+			title: 'Africa Leads Growth',
+			description: 'African military expenditure rose 8.3 per cent \u2014 the highest regional increase globally \u2014 with Ghana up 129 per cent and Angola up 36 per cent.',
+			context: 'High commodity prices and growing security threats fuelled spending across the continent. The Central African Republic and Mali conflicts also drove increases in neighbouring states.'
+		},
+		{
 			year: 2014,
 			title: 'Boko Haram & Instability',
 			description: 'The rise of Boko Haram and Sahel insurgencies drive military buildups in West Africa.',
 			context: 'Nigeria\'s military spending surged as the government fought Boko Haram in the northeast. Regional coalitions formed to combat cross-border extremist threats.'
 		},
 		{
+			year: 2015,
+			title: 'Oil Price Crash',
+			description: 'African spending fell 5.3 per cent \u2014 the first decline after years of increases \u2014 as collapsing oil prices forced cuts in Angola, South Sudan and other oil-dependent states.',
+			context: 'The sharp fall in oil prices from late 2014 hit African budgets hard. Countries that had funded military modernisation through commodity revenues were forced to reverse course.'
+		},
+		{
 			year: 2022,
 			title: 'Sahel Conflicts Deepen',
 			description: 'Ongoing conflicts in the Sahel and military coups reshape African defence spending patterns.',
 			context: 'African spending fell 5.3 per cent in 2022 amid poor economic performance, then rebounded 22 per cent in 2023, boosted by oil revenues and ongoing conflicts in Burkina Faso and elsewhere.'
+		},
+		{
+			year: 2023,
+			title: 'Africa Surges',
+			description: 'African military expenditure rose 22 per cent to $51.6 billion \u2014 the most significant rise of any region.',
+			context: 'Conflicts in the Democratic Republic of the Congo and across the Sahel, combined with recovering oil revenues, drove the increase. Algeria and Nigeria accounted for a large share of the growth.'
 		}
 	]
 };

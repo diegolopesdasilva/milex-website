@@ -18,7 +18,14 @@
 	const RE_CI_LO = 0.037;
 	const RE_CI_HI = 0.095;
 	const STUDY_SD = 0.25; // estimated from spread of named study-level PCCs
-	const N_DOTS = 169;
+
+	// Only statistically significant estimates:
+	// 40% of 169 are negative (~68), of which 38% significant → ~26
+	// 60% of 169 are positive (~101), of which ~50% significant → ~51
+	// Total significant: ~77
+	const N_SIG_NEG = 26;
+	const N_SIG_POS = 51;
+	const N_DOTS = N_SIG_NEG + N_SIG_POS; // 77
 
 	// Named study-level average PCCs from Table 1
 	// above = true → label placed above the dot
@@ -71,11 +78,26 @@
 		return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 	}
 
-	// 169 simulated estimates: N(0.066, 0.25), clamped to [-0.63, 0.63]
-	const dots = Array.from({ length: N_DOTS }, () => ({
-		pcc: Math.max(-0.63, Math.min(0.63, RE_MEAN + STUDY_SD * gauss())),
-		jy:  (rng() - 0.5) * 82   // vertical jitter
-	}));
+	// Simulate only statistically significant estimates.
+	// Significant negative: drawn from left tail (mean ~ −0.22, narrower spread)
+	// Significant positive: drawn from right tail (mean ~ +0.20, narrower spread)
+	function generateSigDots() {
+		const out: { pcc: number; jy: number }[] = [];
+		// Significant negative estimates
+		for (let i = 0; i < N_SIG_NEG; i++) {
+			let pcc: number;
+			do { pcc = -0.22 + 0.14 * gauss(); } while (pcc >= 0 || pcc < -0.63);
+			out.push({ pcc, jy: (rng() - 0.5) * 82 });
+		}
+		// Significant positive estimates
+		for (let i = 0; i < N_SIG_POS; i++) {
+			let pcc: number;
+			do { pcc = 0.20 + 0.14 * gauss(); } while (pcc <= 0 || pcc > 0.63);
+			out.push({ pcc, jy: (rng() - 0.5) * 82 });
+		}
+		return out;
+	}
+	const dots = generateSigDots();
 
 	// ── SVG dimensions ──
 	const W = 800;
@@ -116,15 +138,16 @@
 			<strong>32 studies</strong> in the most comprehensive meta-analysis of this literature.
 			Their headline finding: the average partial correlation between military spending and growth
 			is small and positive (PCC ≈ 0.07), with no evidence of publication bias —
-			but the results are highly heterogeneous. <strong>40&thinsp;%</strong> of estimates are
-			negative; <strong>60&thinsp;%</strong> are positive. Where you look, and when, matters
-			enormously.
+			but the results are highly heterogeneous. Of the 169 estimates,
+			<strong>77</strong> are statistically significant: 26 negative (military spending
+			harms growth) and 51 positive (military spending helps growth).
+			Where you look, and when, matters enormously.
 		</p>
 
 		<!-- ══ Dot swarm ══ -->
 		<div class="chart-block">
 			<p class="chart-label">
-				169 effect estimates across 32 studies
+				77 statistically significant estimates across 32 studies
 				<span class="chart-sublabel">— vertical position is random jitter for readability; only horizontal position (PCC) carries meaning</span>
 			</p>
 			<svg
@@ -262,9 +285,10 @@
 
 		<p class="methodology-note">
 			Based on Alptekin &amp; Levine (2012), "Military Expenditure and Economic Growth: A Meta-Analysis,"
-			<em>European Journal of Political Economy</em> 28(4), 636–650. The dot distribution simulates the reported
-			pooled PCC (RE = 0.066, 95%&thinsp;CI [0.037, 0.095]) and between-study standard deviation (≈ 0.25)
-			using a seeded random number generator; named-study dots use actual study-level average PCCs from Table&thinsp;1.
+			<em>European Journal of Political Economy</em> 28(4), 636–650. Of 169 estimates across 32 studies,
+			77 are statistically significant (26 negative, 51 positive). Only these are plotted.
+			Dot positions are simulated from approximate distributions consistent with the reported
+			statistics; named-study dots use actual study-level average PCCs from Table&thinsp;1.
 			The contextual pointer uses HLM meta-regression coefficients from Table&thinsp;4: period dummies
 			(1950s: +0.253; 1990s+: −0.226) and developed-country dummy (+0.185), relative to the 1960s–80s
 			developing-country baseline. No publication bias detected (FAT: β₀ = 0.112, t = 0.43, p &gt; 0.05).

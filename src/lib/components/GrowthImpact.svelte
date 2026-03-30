@@ -159,18 +159,6 @@
 					/>
 				{/each}
 
-				<!-- Pooled RE mean + CI band -->
-				<rect
-					x={xs(RE_CI_LO)} y={CY - 15}
-					width={xs(RE_CI_HI) - xs(RE_CI_LO)} height={30}
-					fill="var(--text)" opacity="0.09" rx="2"
-				/>
-				<line x1={xs(RE_MEAN)} x2={xs(RE_MEAN)}
-					y1={CY - 26} y2={CY + 26}
-					stroke="var(--text)" stroke-width="2.5" stroke-linecap="round"/>
-				<text x={xs(RE_MEAN)} y={CY - 30}
-					text-anchor="middle" class="mean-label">pooled mean</text>
-
 				<!-- Named study dots with labels -->
 				{#each named as s}
 					{@const lx = xs(s.pcc)}

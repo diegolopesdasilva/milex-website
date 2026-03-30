@@ -125,7 +125,7 @@
 		<div class="chart-block">
 			<p class="chart-label">
 				169 effect estimates across 32 studies
-				<span class="chart-sublabel">— selected named studies shown with outlines</span>
+				<span class="chart-sublabel">— vertical position is random jitter for readability; only horizontal position (PCC) carries meaning</span>
 			</p>
 			<svg
 				viewBox="0 0 {W} {H_SWARM}"

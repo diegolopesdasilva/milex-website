@@ -1,334 +1,286 @@
-<script>
+<script lang="ts">
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 
-	// d'Agostino et al. (2019) IV estimate: Φ₁ = -2.791
-	// A 1pp increase in military burden → -2.791pp impact on per-capita GDP growth
-	const PHI = -2.791;
-	const PHI_SE = 1.055;
+	// ── Alptekin & Levine (2012) ──
+	// "Military Expenditure and Economic Growth: A Meta-Analysis"
+	// European Journal of Political Economy 28(4), 636–650
+	//
+	// 32 studies · 169 estimates
+	// RE pooled mean PCC = 0.066  [95% CI: 0.037, 0.095]
+	// FE pooled mean PCC = 0.056
+	// Distribution: 40% negative, 60% positive
+	// No publication bias: FAT β₀ = 0.112 (t = 0.43, p > 0.05)
+	// Genuine effect confirmed: PET β₁ = 0.099 (t = 3.48, p < 0.01, HLM)
+	// Heterogeneity: Q(168) = 593.1, p < 0.001  → very high between-study variance
 
-	// Slider state
-	let milexIncrease = $state(1.0); // pp increase in military burden
+	const RE_MEAN = 0.066;
+	const RE_CI_LO = 0.037;
+	const RE_CI_HI = 0.095;
+	const STUDY_SD = 0.25; // estimated from spread of named study-level PCCs
+	const N_DOTS = 169;
 
-	// Chart parameters
-	const baselineGrowth = 3.0; // baseline annual per-capita GDP growth (%)
-	const preYears = 5;
-	const postYears = 5;
-	const totalYears = preYears + postYears;
-	// Sub-year resolution for smoother curves
-	const stepsPerYear = 4;
-	const totalSteps = totalYears * stepsPerYear;
-	const preSteps = preYears * stepsPerYear;
-
-	// Tweened values for smooth animation
-	const tweenedIncrease = tweened(1.0, { duration: 400, easing: cubicOut });
-	$effect(() => { tweenedIncrease.set(milexIncrease); });
-
-	// Seeded noise for natural-looking GDP fluctuation
-	// Pre-generated mild business cycle noise (quarterly)
-	const cycleNoise = [
-		0, 0.15, 0.25, 0.10, -0.05, -0.20, -0.10, 0.05,
-		0.20, 0.35, 0.40, 0.30, 0.15, 0.00, -0.15, -0.25,
-		-0.10, 0.10, 0.25, 0.35, 0.20, 0.05, -0.05, 0.00,
-		0.10, 0.20, 0.30, 0.25, 0.15, 0.05, -0.10, -0.20,
-		-0.15, 0.00, 0.15, 0.25, 0.30, 0.20, 0.10, 0.05
+	// Named study-level average PCCs from Table 1
+	// above = true → label placed above the dot
+	const named = [
+		{ label: 'Benoit (1978)',        pcc:  0.383, above: true  },
+		{ label: 'Deger & Smith (1983)', pcc:  0.131, above: false },
+		{ label: 'Looney (1989)',        pcc: -0.284, above: false },
+		{ label: 'Yakovlev (2007)',      pcc: -0.148, above: true  },
+		{ label: 'Antonakis (1997)',     pcc: -0.456, above: true  },
 	];
 
-	// Generate GDP index path with quarterly steps and cycle noise
-	function generatePathWithNoise(annualGrowth, steps, noiseOffset = 0) {
-		const quarterlyGrowth = annualGrowth / stepsPerYear;
-		const pts = [100];
-		for (let i = 1; i <= steps; i++) {
-			const noise = cycleNoise[(i + noiseOffset) % cycleNoise.length] * 0.3;
-			const effectiveGrowth = quarterlyGrowth + noise / stepsPerYear;
-			pts.push(pts[i - 1] * (1 + effectiveGrowth / 100));
-		}
-		return pts;
+	// ── Moderator coefficients from HLM meta-regression, Table 4 (specific model) ──
+	// Baseline: 1960s–80s data, developing countries → RE mean ≈ 0.066
+	type Period  = '1950s' | '1960s–80s' | '1990s+';
+	type Country = 'developing' | 'developed';
+
+	const MOD_PERIOD: Record<Period, number> = {
+		'1950s':    0.253,
+		'1960s–80s': 0,
+		'1990s+':  -0.226
+	};
+	const MOD_COUNTRY: Record<Country, number> = {
+		developing: 0,
+		developed:  0.185
+	};
+
+	let period:  Period  = $state('1960s–80s');
+	let country: Country = $state('developing');
+
+	let rawCtx = $derived(RE_MEAN + MOD_PERIOD[period] + MOD_COUNTRY[country]);
+
+	const tweenedCtx = tweened(RE_MEAN, { duration: 500, easing: cubicOut });
+	$effect(() => { tweenedCtx.set(rawCtx); });
+
+	// ── Seeded RNG → reproducible dot positions ──
+	function mulberry32(seed: number) {
+		let a = seed;
+		return () => {
+			a = (a + 0x6D2B79F5) | 0;
+			let t = Math.imul(a ^ (a >>> 15), a | 1);
+			t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+			return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+		};
+	}
+	const rng = mulberry32(31337);
+
+	function gauss(): number {
+		const u = Math.max(rng(), 1e-10);
+		const v = rng();
+		return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 	}
 
-	// Reactive computations
-	let impactedGrowth = $derived(baselineGrowth + PHI * $tweenedIncrease);
-	let lowerGrowth = $derived(baselineGrowth + (PHI - 1.96 * PHI_SE) * $tweenedIncrease);
-	let upperGrowth = $derived(baselineGrowth + (PHI + 1.96 * PHI_SE) * $tweenedIncrease);
+	// 169 simulated estimates: N(0.066, 0.25), clamped to [-0.63, 0.63]
+	const dots = Array.from({ length: N_DOTS }, () => ({
+		pcc: Math.max(-0.63, Math.min(0.63, RE_MEAN + STUDY_SD * gauss())),
+		jy:  (rng() - 0.5) * 82   // vertical jitter
+	}));
 
-	let baselinePath = $derived(generatePathWithNoise(baselineGrowth, totalSteps));
-	let impactedPath = $derived(() => {
-		const pre = generatePathWithNoise(baselineGrowth, preSteps);
-		const baseAtTreatment = pre[preSteps];
-		const post = generatePathWithNoise(impactedGrowth, postYears * stepsPerYear, preSteps);
-		return [
-			...pre,
-			...post.slice(1).map(v => baseAtTreatment * (v / 100))
-		];
-	});
-	let lowerPathData = $derived(() => {
-		const pre = generatePathWithNoise(baselineGrowth, preSteps);
-		const baseAtTreatment = pre[preSteps];
-		const post = generatePathWithNoise(lowerGrowth, postYears * stepsPerYear, preSteps + 5);
-		return [
-			...pre,
-			...post.slice(1).map(v => baseAtTreatment * (v / 100))
-		];
-	});
-	let upperPathData = $derived(() => {
-		const pre = generatePathWithNoise(baselineGrowth, preSteps);
-		const baseAtTreatment = pre[preSteps];
-		const post = generatePathWithNoise(upperGrowth, postYears * stepsPerYear, preSteps + 10);
-		return [
-			...pre,
-			...post.slice(1).map(v => baseAtTreatment * (v / 100))
-		];
-	});
+	// ── SVG dimensions ──
+	const W = 800;
+	const H_SWARM = 248;
+	const H_GAUGE = 92;
+	const ML = 35, MR = 35, MT = 32, MB = 46;
+	const PW = W - ML - MR;
+	const CY  = MT + (H_SWARM - MT - MB) / 2 + 6;   // dot-cloud centre Y
 
-	// SVG dimensions
-	const width = 800;
-	const height = 420;
-	const margin = { top: 30, right: 120, bottom: 55, left: 70 };
-	const plotW = width - margin.left - margin.right;
-	const plotH = height - margin.top - margin.bottom;
-
-	// Scales
-	function xScale(step) {
-		return margin.left + (step / totalSteps) * plotW;
+	const X_MIN = -0.65, X_MAX = 0.65;
+	function xs(v: number): number {
+		return ML + ((v - X_MIN) / (X_MAX - X_MIN)) * PW;
 	}
 
-	let allPts = $derived([...baselinePath, ...impactedPath(), ...lowerPathData()]);
-	let yMin = $derived(Math.min(...allPts) * 0.97);
-	let yMax = $derived(Math.max(...baselinePath) * 1.03);
+	const TICKS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];
+	const AX_S  = H_SWARM - MB + 8;   // x-axis y of swarm
+	const AX_G  = H_GAUGE - 30;       // x-axis y of gauge
 
-	function yScale(val) {
-		return margin.top + plotH - ((val - yMin) / (yMax - yMin)) * plotH;
+	// ── Gauge pointer (derived so they're valid in template) ──
+	let pointerX   = $derived(xs($tweenedCtx));
+	let pointerCol = $derived($tweenedCtx < 0 ? 'var(--region-africa)' : 'var(--region-americas)');
+
+	// ── Interpretation text ──
+	function interp(v: number): string {
+		if (v >  0.20) return 'Studies of this type tend to find a <b>clearly positive</b> association — higher military spending linked to faster growth.';
+		if (v >  0.05) return 'Studies of this type tend to find a <b>weakly positive</b> association — slightly higher growth with higher spending.';
+		if (v > -0.05) return 'Studies of this type tend to find <b>little or no effect</b> — the relationship is ambiguous.';
+		return 'Studies of this type tend to find a <b>negative</b> association — higher military spending linked to slower growth.';
 	}
-
-	// Smooth SVG path using cardinal spline approximation
-	function toSvgPath(pts) {
-		if (pts.length < 2) return '';
-		let d = `M${xScale(0).toFixed(1)},${yScale(pts[0]).toFixed(1)}`;
-		for (let i = 1; i < pts.length; i++) {
-			d += ` L${xScale(i).toFixed(1)},${yScale(pts[i]).toFixed(1)}`;
-		}
-		return d;
-	}
-
-	// Confidence band polygon
-	let bandPath = $derived(() => {
-		const upper = upperPathData();
-		const lower = lowerPathData();
-		const fwd = upper.map((v, i) => `${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`);
-		const bwd = [...lower].reverse().map((v, i) => {
-			const idx = lower.length - 1 - i;
-			return `${xScale(idx).toFixed(1)},${yScale(v).toFixed(1)}`;
-		});
-		return `M${fwd.join(' L')} L${bwd.join(' L')} Z`;
-	});
-
-	// Growth gap at end
-	let endBaseline = $derived(baselinePath[totalSteps]);
-	let endImpacted = $derived(impactedPath()[totalSteps]);
-	let growthGap = $derived((endBaseline - endImpacted).toFixed(1));
-	let pctGap = $derived(((1 - endImpacted / endBaseline) * 100).toFixed(1));
-
-	// Format
-	function fmt(n) { return n.toFixed(1); }
 </script>
 
 <section class="growth-section">
 	<div class="growth-content">
-		<h2 class="section-title">The Cost of the Arms Buildup</h2>
+		<h2 class="section-title">What Does the Evidence Say?</h2>
 		<p class="section-intro">
-			What does rising military expenditure mean for economic growth? Research by
-			d'Agostino, Dunne & Pieroni (2019) found that increases in military burden
-			significantly reduce per-capita GDP growth. Using an instrumental variable
-			approach on 109 non-high-income countries (1998–2012), they estimated that
-			each percentage point increase in military spending as a share of GDP reduces
-			annual per-capita growth by approximately 2.8 percentage points.
-		</p>
-		<p class="section-intro">
-			Use the slider below to explore how different increases in military burden
-			affect a hypothetical economy's growth trajectory.
+			The relationship between military spending and economic growth has been debated for decades.
+			Alptekin &amp; Levine (2012) synthesised <strong>169 estimates</strong> from
+			<strong>32 studies</strong> in the most comprehensive meta-analysis of this literature.
+			Their headline finding: the average partial correlation between military spending and growth
+			is small and positive (PCC ≈ 0.07), with no evidence of publication bias —
+			but the results are highly heterogeneous. <strong>40&thinsp;%</strong> of estimates are
+			negative; <strong>60&thinsp;%</strong> are positive. Where you look, and when, matters
+			enormously.
 		</p>
 
-		<div class="interactive-area">
-			<!-- Slider -->
-			<div class="slider-container">
-				<div class="slider-label-row">
-					<span class="slider-label">Increase in military burden</span>
-					<span class="slider-value">+{fmt(milexIncrease)} pp of GDP</span>
-				</div>
-				<input
-					type="range"
-					min="0"
-					max="3"
-					step="0.1"
-					bind:value={milexIncrease}
-					class="milex-slider"
+		<!-- ══ Dot swarm ══ -->
+		<div class="chart-block">
+			<p class="chart-label">
+				169 effect estimates across 32 studies
+				<span class="chart-sublabel">— selected named studies shown with outlines</span>
+			</p>
+			<svg
+				viewBox="0 0 {W} {H_SWARM}"
+				preserveAspectRatio="xMidYMid meet"
+				class="chart-svg"
+				aria-label="Dot distribution of 169 PCC estimates"
+			>
+				<!-- Zone shading -->
+				<rect x={ML} y={MT} width={xs(0) - ML} height={H_SWARM - MT - MB}
+					fill="var(--region-africa)" opacity="0.05"/>
+				<rect x={xs(0)} y={MT} width={W - MR - xs(0)} height={H_SWARM - MT - MB}
+					fill="var(--region-americas)" opacity="0.05"/>
+
+				<!-- Zero reference -->
+				<line x1={xs(0)} x2={xs(0)} y1={MT} y2={AX_S}
+					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="5,3" opacity="0.55"/>
+
+				<!-- Zone labels -->
+				<text x={(ML + xs(0)) / 2} y={MT - 10}
+					text-anchor="middle" class="zone-label neg">← Harmful to growth</text>
+				<text x={(xs(0) + W - MR) / 2} y={MT - 10}
+					text-anchor="middle" class="zone-label pos">Beneficial to growth →</text>
+
+				<!-- Simulated dots -->
+				{#each dots as d}
+					<circle
+						cx={xs(d.pcc)} cy={CY + d.jy}
+						r={2.8}
+						fill={d.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
+						opacity={0.35}
+					/>
+				{/each}
+
+				<!-- Pooled RE mean + CI band -->
+				<rect
+					x={xs(RE_CI_LO)} y={CY - 15}
+					width={xs(RE_CI_HI) - xs(RE_CI_LO)} height={30}
+					fill="var(--text)" opacity="0.09" rx="2"
 				/>
-				<div class="slider-ticks">
-					<span>0</span>
-					<span>+1 pp</span>
-					<span>+2 pp</span>
-					<span>+3 pp</span>
-				</div>
-			</div>
+				<line x1={xs(RE_MEAN)} x2={xs(RE_MEAN)}
+					y1={CY - 26} y2={CY + 26}
+					stroke="var(--text)" stroke-width="2.5" stroke-linecap="round"/>
+				<text x={xs(RE_MEAN)} y={CY - 30}
+					text-anchor="middle" class="mean-label">pooled mean</text>
 
-			<!-- Chart -->
-			<div class="chart-container">
-				<svg viewBox="0 0 {width} {height}" preserveAspectRatio="xMidYMid meet">
-					<!-- Grid lines -->
-					{#each [0, 1, 2, 3, 4] as i}
-						{@const val = yMin + (i / 4) * (yMax - yMin)}
-						<line
-							x1={margin.left} x2={width - margin.right}
-							y1={yScale(val)} y2={yScale(val)}
-							stroke="var(--border-light)" stroke-width="0.5"
-						/>
-						<text
-							x={margin.left - 10} y={yScale(val) + 5}
-							text-anchor="end"
-							class="axis-label"
-						>{val.toFixed(0)}</text>
-					{/each}
+				<!-- Named study dots with labels -->
+				{#each named as s}
+					{@const lx = xs(s.pcc)}
+					{@const ly = CY}
+					{@const col = s.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
+					{@const labelY = s.above ? ly - 28 : ly + 33}
+					{@const lineY1 = s.above ? ly - 7  : ly + 7}
+					{@const lineY2 = s.above ? ly - 20 : ly + 20}
+					<circle cx={lx} cy={ly} r={5.5}
+						fill={col} opacity={0.92}
+						stroke="var(--bg)" stroke-width="1.8"/>
+					<line x1={lx} x2={lx} y1={lineY1} y2={lineY2}
+						stroke={col} stroke-width="1" opacity="0.65"/>
+					<text x={lx} y={labelY}
+						text-anchor="middle" class="study-label" fill={col}>{s.label}</text>
+				{/each}
 
-					<!-- Treatment zone background -->
-					<rect
-						x={xScale(preSteps)}
-						y={margin.top}
-						width={xScale(totalSteps) - xScale(preSteps)}
-						height={plotH}
-						fill="var(--region-middle-east)"
-						opacity="0.06"
-					/>
-
-					<!-- Treatment line -->
-					<line
-						x1={xScale(preSteps)} x2={xScale(preSteps)}
-						y1={margin.top} y2={margin.top + plotH}
-						stroke="var(--region-middle-east)"
-						stroke-width="1.5"
-						stroke-dasharray="6,4"
-					/>
-					<text
-						x={xScale(preSteps) + 8} y={margin.top + 16}
-						class="treatment-label"
-					>Military burden increases</text>
-
-					<!-- Confidence band (only post-treatment) -->
-					{#if milexIncrease > 0}
-						<path
-							d={bandPath()}
-							fill="var(--region-middle-east)"
-							opacity="0.10"
-						/>
-					{/if}
-
-					<!-- Baseline path (full) -->
-					<path
-						d={toSvgPath(baselinePath)}
-						fill="none"
-						stroke="var(--region-americas)"
-						stroke-width="2.5"
-						stroke-dasharray={milexIncrease > 0 ? "8,4" : "none"}
-					/>
-
-					<!-- Impacted path -->
-					{#if milexIncrease > 0}
-						<path
-							d={toSvgPath(impactedPath())}
-							fill="none"
-							stroke="var(--region-africa)"
-							stroke-width="2.5"
-						/>
-					{/if}
-
-					<!-- End-point labels -->
-					<text
-						x={xScale(totalSteps) + 8}
-						y={yScale(baselinePath[totalSteps]) + 5}
-						class="endpoint-label baseline-label"
-					>Baseline ({fmt(baselineGrowth)}%/yr)</text>
-
-					{#if milexIncrease > 0}
-						<text
-							x={xScale(totalSteps) + 8}
-							y={yScale(endImpacted) + 5}
-							class="endpoint-label impact-label"
-						>+{fmt(milexIncrease)}pp ({fmt(impactedGrowth)}%/yr)</text>
-					{/if}
-
-					<!-- Gap annotation -->
-					{#if milexIncrease > 0}
-						<line
-							x1={xScale(totalSteps) - 2}
-							x2={xScale(totalSteps) - 2}
-							y1={yScale(endBaseline)}
-							y2={yScale(endImpacted)}
-							stroke="var(--text-muted)"
-							stroke-width="1"
-							stroke-dasharray="3,2"
-						/>
-					{/if}
-
-					<!-- X-axis labels -->
-					{#each Array.from({ length: totalYears + 1 }, (_, i) => i) as year}
-						{@const label = year - preYears}
-						<text
-							x={xScale(year * stepsPerYear)} y={margin.top + plotH + 24}
-							text-anchor="middle"
-							class="axis-label"
-							class:treatment-year={year === preYears}
-						>t{label >= 0 ? '+' : ''}{label}</text>
-					{/each}
-
-					<!-- Y-axis title -->
-					<text
-						x={18} y={margin.top + plotH / 2}
-						transform="rotate(-90, 18, {margin.top + plotH / 2})"
-						text-anchor="middle"
-						class="axis-title"
-					>GDP per capita index (t−5 = 100)</text>
-
-					<!-- X-axis title -->
-					<text
-						x={margin.left + plotW / 2} y={height - 8}
-						text-anchor="middle"
-						class="axis-title"
-					>Years relative to increase in military burden</text>
-				</svg>
-			</div>
-
-			<!-- Impact summary cards -->
-			<div class="impact-cards">
-				<div class="impact-card">
-					<div class="card-value" class:negative={milexIncrease > 0}>
-						{milexIncrease > 0 ? fmt(impactedGrowth) : fmt(baselineGrowth)}%
-					</div>
-					<div class="card-label">Annual per-capita growth after increase</div>
-				</div>
-				<div class="impact-card">
-					<div class="card-value" class:negative={milexIncrease > 0}>
-						{milexIncrease > 0 ? '−' + growthGap : '0'}
-					</div>
-					<div class="card-label">GDP per capita gap after 5 years (index points)</div>
-				</div>
-				<div class="impact-card">
-					<div class="card-value" class:negative={milexIncrease > 0}>
-						{milexIncrease > 0 ? '−' + pctGap + '%' : '0%'}
-					</div>
-					<div class="card-label">Cumulative output loss after 5 years</div>
-				</div>
-			</div>
+				<!-- X-axis -->
+				<line x1={ML} x2={W - MR} y1={AX_S} y2={AX_S}
+					stroke="var(--border-light)" stroke-width="1"/>
+				{#each TICKS as t}
+					<line x1={xs(t)} x2={xs(t)} y1={AX_S - 3} y2={AX_S + 6}
+						stroke="var(--text-muted)" stroke-width="1"/>
+					<text x={xs(t)} y={AX_S + 18}
+						text-anchor="middle" class="tick-label">{t.toFixed(1)}</text>
+				{/each}
+				<text x={ML + PW / 2} y={H_SWARM - 5}
+					text-anchor="middle" class="axis-title">
+					Partial correlation coefficient (PCC)
+				</text>
+			</svg>
 		</div>
 
-		<!-- Methodology note -->
+		<!-- ══ Interactive context ══ -->
+		<div class="context-block">
+			<p class="chart-label">How does context shift the estimated effect?</p>
+			<p class="context-sub">
+				These sliders use HLM meta-regression coefficients from Table&thinsp;4 of the paper
+				to show how the pooled estimate shifts with study characteristics.
+			</p>
+
+			<div class="filters">
+				<div class="filter-group">
+					<span class="filter-label">Time period of data</span>
+					<div class="btn-group">
+						{#each (['1950s', '1960s–80s', '1990s+'] as Period[]) as p}
+							<button class="tog" class:active={period === p}
+								onclick={() => period = p}>{p}</button>
+						{/each}
+					</div>
+				</div>
+				<div class="filter-group">
+					<span class="filter-label">Country sample</span>
+					<div class="btn-group">
+						<button class="tog" class:active={country === 'developing'}
+							onclick={() => country = 'developing'}>Developing</button>
+						<button class="tog" class:active={country === 'developed'}
+							onclick={() => country = 'developed'}>Developed</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Gauge on same PCC axis -->
+			<svg
+				viewBox="0 0 {W} {H_GAUGE}"
+				preserveAspectRatio="xMidYMid meet"
+				class="chart-svg gauge-svg"
+				aria-label="Animated pointer showing contextual meta-analytic estimate"
+			>
+				<!-- Zone shading -->
+				<rect x={ML} y={8} width={xs(0) - ML} height={H_GAUGE - 38}
+					fill="var(--region-africa)" opacity="0.05"/>
+				<rect x={xs(0)} y={8} width={W - MR - xs(0)} height={H_GAUGE - 38}
+					fill="var(--region-americas)" opacity="0.05"/>
+
+				<!-- Axis -->
+				<line x1={ML} x2={W - MR} y1={AX_G} y2={AX_G}
+					stroke="var(--border-light)" stroke-width="1.5"/>
+				<line x1={xs(0)} x2={xs(0)} y1={8} y2={AX_G}
+					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>
+				{#each TICKS as t}
+					<line x1={xs(t)} x2={xs(t)} y1={AX_G - 4} y2={AX_G + 7}
+						stroke="var(--border-light)" stroke-width="1"/>
+					<text x={xs(t)} y={AX_G + 20}
+						text-anchor="middle" class="tick-label">{t.toFixed(1)}</text>
+				{/each}
+
+				<!-- Animated pointer (compute in script via $derived) -->
+				<line x1={pointerX} x2={pointerX} y1={28} y2={AX_G - 2}
+					stroke={pointerCol} stroke-width="3" stroke-linecap="round"/>
+				<polygon points="{pointerX},{28} {pointerX - 9},{44} {pointerX + 9},{44}" fill={pointerCol}/>
+				<text x={pointerX} y={18} text-anchor="middle" class="pointer-val" fill={pointerCol}>
+					{$tweenedCtx.toFixed(3)}
+				</text>
+			</svg>
+
+			<p class="interp-text" class:neg={rawCtx < -0.05} class:neutral={rawCtx >= -0.05 && rawCtx <= 0.05}>
+				{@html interp(rawCtx)}
+			</p>
+		</div>
+
 		<p class="methodology-note">
-			Based on IV estimates from d'Agostino, Dunne & Pieroni (2019),
-			"Military Expenditure, Endogeneity and Economic Growth,"
-			<em>Defence and Peace Economics</em> 29(4). The coefficient Φ₁ = −2.791
-			(s.e. = 1.055) represents the causal effect of military burden on per-capita
-			GDP growth, estimated using turmoil as an instrumental variable for military
-			spending across 109 non-high-income countries (1998–2012). The shaded band
-			shows the 95% confidence interval. Results are illustrative — actual effects
-			vary by country context, institutional quality and the nature of spending.
+			Based on Alptekin &amp; Levine (2012), "Military Expenditure and Economic Growth: A Meta-Analysis,"
+			<em>European Journal of Political Economy</em> 28(4), 636–650. The dot distribution simulates the reported
+			pooled PCC (RE = 0.066, 95%&thinsp;CI [0.037, 0.095]) and between-study standard deviation (≈ 0.25)
+			using a seeded random number generator; named-study dots use actual study-level average PCCs from Table&thinsp;1.
+			The contextual pointer uses HLM meta-regression coefficients from Table&thinsp;4: period dummies
+			(1950s: +0.253; 1990s+: −0.226) and developed-country dummy (+0.185), relative to the 1960s–80s
+			developing-country baseline. No publication bias detected (FAT: β₀ = 0.112, t = 0.43, p &gt; 0.05).
+			A genuine effect was confirmed (PET: β₁ = 0.099, t = 3.48, p &lt; 0.01).
 		</p>
 	</div>
 </section>
@@ -346,6 +298,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(2.5rem, 5vw, 4rem);
 		font-weight: 400;
+		font-style: italic;
 		color: var(--text);
 		text-align: center;
 		margin-bottom: 2.5rem;
@@ -362,191 +315,186 @@
 		margin-bottom: 1.5rem;
 	}
 
-	.interactive-area {
-		margin-top: 3rem;
-	}
-
-	/* ── Slider ── */
-	.slider-container {
-		max-width: 700px;
-		margin: 0 auto 2.5rem;
-	}
-
-	.slider-label-row {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		margin-bottom: 0.75rem;
-	}
-
-	.slider-label {
-		font-family: var(--font-sans);
-		font-size: 1.1rem;
-		font-weight: 500;
+	.section-intro strong {
+		font-weight: 600;
 		color: var(--text);
 	}
 
-	.slider-value {
-		font-family: var(--font-display);
-		font-size: 1.6rem;
-		font-weight: 400;
-		color: var(--region-africa);
+	/* ── Charts ── */
+	.chart-block,
+	.context-block {
+		margin-top: 3rem;
 	}
 
-	.milex-slider {
-		width: 100%;
-		-webkit-appearance: none;
-		appearance: none;
-		height: 4px;
-		background: var(--border-light);
-		border-radius: 2px;
-		outline: none;
-		cursor: pointer;
-	}
-
-	.milex-slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 22px;
-		height: 22px;
-		border-radius: 50%;
-		background: var(--region-africa);
-		cursor: pointer;
-		border: 3px solid var(--bg);
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-	}
-
-	.milex-slider::-moz-range-thumb {
-		width: 22px;
-		height: 22px;
-		border-radius: 50%;
-		background: var(--region-africa);
-		cursor: pointer;
-		border: 3px solid var(--bg);
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-	}
-
-	.slider-ticks {
-		display: flex;
-		justify-content: space-between;
-		margin-top: 0.5rem;
+	.chart-label {
 		font-family: var(--font-sans);
-		font-size: 0.9rem;
+		font-size: 0.95rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		margin: 0 0 0.5rem;
+	}
+
+	.chart-sublabel {
+		font-weight: 300;
+		text-transform: none;
+		letter-spacing: 0;
 		color: var(--text-light);
 	}
 
-	/* ── Chart ── */
-	.chart-container {
-		width: 100%;
-		margin: 0 auto;
-		padding: 1rem 0;
+	.context-sub {
+		font-family: var(--font-sans);
+		font-size: 0.92rem;
+		font-weight: 300;
+		color: var(--text-light);
+		line-height: 1.6;
+		margin: 0 0 1.5rem;
 	}
 
-	.chart-container svg {
+	.chart-svg {
 		width: 100%;
 		height: auto;
+		display: block;
 	}
 
-	.axis-label {
+	.gauge-svg {
+		margin-top: 1.2rem;
+	}
+
+	/* SVG text classes */
+	:global(.zone-label) {
 		font-family: var(--font-sans);
-		font-size: 14px;
-		fill: var(--text-muted);
-	}
-
-	.axis-label.treatment-year {
-		fill: var(--region-africa);
-		font-weight: 600;
-	}
-
-	.axis-title {
-		font-family: var(--font-sans);
-		font-size: 13px;
-		fill: var(--text-muted);
-	}
-
-	.treatment-label {
-		font-family: var(--font-sans);
-		font-size: 13px;
-		fill: var(--region-africa);
+		font-size: 11px;
 		font-weight: 500;
+		letter-spacing: 0.03em;
 	}
+	:global(.zone-label.neg) { fill: var(--region-africa); }
+	:global(.zone-label.pos) { fill: var(--region-americas); }
 
-	.endpoint-label {
+	:global(.mean-label) {
 		font-family: var(--font-sans);
-		font-size: 13px;
+		font-size: 11px;
 		font-weight: 500;
+		fill: var(--text);
+		letter-spacing: 0.02em;
 	}
 
-	.baseline-label {
-		fill: var(--region-americas);
-	}
-
-	.impact-label {
-		fill: var(--region-africa);
-	}
-
-	/* ── Impact cards ── */
-	.impact-cards {
-		display: flex;
-		gap: 2rem;
-		justify-content: center;
-		margin-top: 2.5rem;
-		flex-wrap: wrap;
-	}
-
-	.impact-card {
-		text-align: center;
-		flex: 0 1 220px;
-		padding: 1.5rem 1rem;
-	}
-
-	.card-value {
-		font-family: var(--font-display);
-		font-size: 2.5rem;
+	:global(.study-label) {
+		font-family: var(--font-sans);
+		font-size: 10.5px;
 		font-weight: 400;
-		color: var(--region-americas);
-		margin-bottom: 0.4rem;
+	}
+
+	:global(.tick-label) {
+		font-family: var(--font-sans);
+		font-size: 12px;
+		fill: var(--text-muted);
+	}
+
+	:global(.axis-title) {
+		font-family: var(--font-sans);
+		font-size: 12px;
+		fill: var(--text-muted);
+	}
+
+	:global(.pointer-val) {
+		font-family: var(--font-display);
+		font-size: 14px;
+		font-style: italic;
+	}
+
+	/* ── Filters ── */
+	.filters {
+		display: flex;
+		gap: 3rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.5rem;
+	}
+
+	.filter-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.filter-label {
+		font-family: var(--font-sans);
+		font-size: 0.88rem;
+		font-weight: 400;
+		color: var(--text-muted);
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+	}
+
+	.btn-group {
+		display: flex;
+		gap: 0;
+	}
+
+	.tog {
+		font-family: var(--font-sans);
+		font-size: 0.9rem;
+		font-weight: 400;
+		color: var(--text-muted);
+		background: none;
+		border: 1px solid var(--border-light);
+		padding: 0.35rem 0.9rem;
+		cursor: pointer;
+		transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+		margin-left: -1px;
+	}
+
+	.tog:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
+	.tog:last-child  { border-radius: 0 4px 4px 0; }
+
+	.tog.active {
+		background: var(--text);
+		color: var(--bg);
+		border-color: var(--text);
+		z-index: 1;
+	}
+
+	/* ── Interpretation text ── */
+	.interp-text {
+		font-family: var(--font-sans);
+		font-size: clamp(1.05rem, 2vw, 1.25rem);
+		font-weight: 300;
+		line-height: 1.75;
+		color: var(--text-muted);
+		margin-top: 1.2rem;
 		transition: color 0.3s ease;
 	}
 
-	.card-value.negative {
-		color: var(--region-africa);
-	}
+	.interp-text.neg     { color: var(--region-africa); }
+	.interp-text.neutral { color: var(--text-muted); }
 
-	.card-label {
-		font-family: var(--font-sans);
-		font-size: 0.95rem;
-		font-weight: 300;
-		color: var(--text-muted);
-		line-height: 1.5;
+	.interp-text :global(b) {
+		font-weight: 600;
+		color: inherit;
 	}
 
 	/* ── Methodology note ── */
 	.methodology-note {
 		font-family: var(--font-sans);
-		font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+		font-size: clamp(0.88rem, 1.4vw, 1rem);
 		font-weight: 300;
 		line-height: 1.8;
 		color: var(--text-light);
-		margin-top: 3rem;
+		margin-top: 3.5rem;
 		text-align: justify;
 		border-top: 1px solid var(--border-light);
 		padding-top: 1.5rem;
 	}
 
+	.methodology-note em {
+		font-style: italic;
+	}
+
 	/* ── Responsive ── */
 	@media (max-width: 768px) {
-		.growth-section {
-			padding: 4rem 1rem 6rem;
-		}
-
-		.section-title {
-			font-size: 2rem;
-		}
-
-		.impact-cards {
-			flex-direction: column;
-			align-items: center;
-		}
+		.growth-section { padding: 4rem 0 6rem; }
+		.filters { gap: 1.5rem; }
+		.section-title { font-size: 2rem; }
 	}
 </style>

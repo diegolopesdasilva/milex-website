@@ -191,13 +191,16 @@
 
 	<div class="interactive-area">
 		<div
-			class="waffle-container"
+			class="military-box"
 			class:drag-target={dragging && dragOverWaffle}
-			role="grid"
 			ondragover={handleDragOverWaffle}
 			ondragleave={handleDragLeaveWaffle}
 			ondrop={handleDropOnWaffle}
 		>
+			<div class="cat-header">
+				<span class="cat-label">Military</span>
+			</div>
+			<div class="waffle-container" role="grid">
 			<div class="waffle-grid">
 				{#each waffleGrid as cell (cell.idx)}
 					{@const isSavings = cell.type === 'savings'}
@@ -232,6 +235,7 @@
 				{#if hasAnyAllocation}
 					<button class="reset-btn" onclick={resetAll}>Reset</button>
 				{/if}
+			</div>
 			</div>
 		</div>
 
@@ -355,13 +359,23 @@
 	}
 
 	/* ── Waffle Chart ── */
-	.waffle-container {
+	.military-box {
 		flex: 0 0 auto;
-		transition: border-color 0.3s ease, background-color 0.3s ease;
+		border: 2px dashed var(--border-light);
+		border-radius: 10px;
+		padding: var(--space-md) var(--space-lg);
+		transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
 	}
 
-	.waffle-container.drag-target {
+	.military-box.drag-target {
+		border-style: solid;
+		border-color: var(--text-muted) !important;
 		background-color: rgba(0, 0, 0, 0.02);
+		box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+	}
+
+	.waffle-container {
+		flex: 0 0 auto;
 	}
 
 	.waffle-grid {

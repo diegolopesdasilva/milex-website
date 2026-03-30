@@ -15,7 +15,7 @@
 	type Period  = '1950s' | '1960s–80s' | '1990s+';
 	type Country = 'developing' | 'developed';
 	type PeriodFilter  = 'all' | Period;
-	type CountryFilter = 'both' | Country;
+	type CountryFilter = Country;
 
 	// ── Moderator coefficients (HLM, Table 4 col 6) ──
 	const MOD_PERIOD:  Record<Period, number>  = { '1950s': 0.253, '1960s–80s': 0, '1990s+': -0.226 };
@@ -24,15 +24,15 @@
 	// Approximate SEs derived from significance levels in Table 4
 	const SE_BASE = 0.015;
 	const SE_P: Record<PeriodFilter, number>  = { all: 0, '1950s': 0.115, '1960s–80s': 0, '1990s+': 0.103 };
-	const SE_C: Record<CountryFilter, number> = { both: 0, developing: 0, developed: 0.062 };
+	const SE_C: Record<CountryFilter, number> = { developing: 0, developed: 0.062 };
 
 	// ── Filter state ──
 	let periodFilter:  PeriodFilter  = $state('all');
-	let countryFilter: CountryFilter = $state('both');
+	let countryFilter: CountryFilter = $state('developing');
 
 	// ── Contextual estimate + CI ──
 	let pMod   = $derived(periodFilter === 'all' ? 0 : MOD_PERIOD[periodFilter]);
-	let cMod   = $derived(countryFilter === 'both' ? 0 : MOD_COUNTRY[countryFilter]);
+	let cMod   = $derived(MOD_COUNTRY[countryFilter]);
 	let rawCtx = $derived(RE_MEAN + pMod + cMod);
 	let ctxSE  = $derived(Math.sqrt(SE_BASE ** 2 + SE_P[periodFilter] ** 2 + SE_C[countryFilter] ** 2));
 	let ciLo   = $derived(rawCtx - 1.96 * ctxSE);
@@ -115,11 +115,11 @@
 	// ── Visibility (derived arrays for reactivity) ──
 	let dotVis = $derived(allDots.map(d =>
 		(periodFilter === 'all' || d.period === periodFilter)
-		&& (countryFilter === 'both' || d.country === countryFilter)
+		&& d.country === countryFilter
 	));
 	let namedVis = $derived(named.map(s =>
 		(periodFilter === 'all' || s.period === periodFilter)
-		&& (countryFilter === 'both' || s.country === countryFilter)
+		&& s.country === countryFilter
 	));
 	let visCount = $derived(dotVis.filter(Boolean).length);
 
@@ -163,8 +163,6 @@
 			<div class="filter-group">
 				<span class="filter-label">Country sample</span>
 				<div class="btn-group">
-					<button class="tog" class:active={countryFilter === 'both'}
-						onclick={() => countryFilter = 'both'}>Both</button>
 					<button class="tog" class:active={countryFilter === 'developing'}
 						onclick={() => countryFilter = 'developing'}>Developing</button>
 					<button class="tog" class:active={countryFilter === 'developed'}

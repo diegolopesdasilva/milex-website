@@ -183,7 +183,7 @@
 	<h2 class="section-title">What If?</h2>
 	<p class="section-intro">
 		Global military expenditure reached $2,718 billion in 2024. What if just 2 per cent
-		— <strong>${SAVINGS_B.toFixed(0)} billion</strong> — were redirected?
+		— <span class="savings-figure">${SAVINGS_B.toFixed(0)} billion</span> — were redirected?
 		Each square below represents a fraction of global military spending.
 		The <span class="highlight-swatch"></span> highlighted squares represent 2 per cent of the total.
 		Drag them into the boxes on the right to explore what that money could achieve.
@@ -337,6 +337,12 @@
 
 	.section-intro strong {
 		font-weight: 600;
+	}
+
+	.savings-figure {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-weight: 400;
 	}
 
 	.highlight-swatch {

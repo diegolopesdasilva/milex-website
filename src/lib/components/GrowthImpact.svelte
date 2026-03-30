@@ -140,12 +140,12 @@
 		<h2 class="section-title">What Does the Evidence Say?</h2>
 		<p class="section-intro">
 			The relationship between military spending and economic growth has been debated for decades.
-			Alptekin &amp; Levine (2012) synthesised 169 estimates from
-			32 studies in the most comprehensive meta-analysis of this literature.
+			Alptekin &amp; Levine (2012) synthesised <strong>169 estimates</strong> from
+			<strong>32 studies</strong> in the most comprehensive meta-analysis of this literature.
 			Their headline finding: the average partial correlation between military spending and growth
 			is small and positive (PCC ≈ 0.07), with no evidence of publication bias —
 			but the results are highly heterogeneous. Of the 169 estimates,
-			77 are statistically significant: 26 negative (military spending
+			<strong>77</strong> are statistically significant: 26 negative (military spending
 			harms growth) and 51 positive (military spending helps growth).
 			Where you look, and when, matters enormously.
 		</p>

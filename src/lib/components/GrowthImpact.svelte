@@ -112,13 +112,16 @@
 		{ label: 'Antonakis (1997)',     pcc: -0.456, above: true,  jy: 0, period: '1990s+',    country: 'developing' },
 	];
 
-	// ── Visibility ──
-	function isVis(d: { period: Period; country: Country }): boolean {
-		return (periodFilter === 'all' || d.period === periodFilter)
-			&& (countryFilter === 'both' || d.country === countryFilter);
-	}
-
-	let visCount = $derived(allDots.filter(d => isVis(d)).length);
+	// ── Visibility (derived arrays for reactivity) ──
+	let dotVis = $derived(allDots.map(d =>
+		(periodFilter === 'all' || d.period === periodFilter)
+		&& (countryFilter === 'both' || d.country === countryFilter)
+	));
+	let namedVis = $derived(named.map(s =>
+		(periodFilter === 'all' || s.period === periodFilter)
+		&& (countryFilter === 'both' || s.country === countryFilter)
+	));
+	let visCount = $derived(dotVis.filter(Boolean).length);
 
 	// ── Interpretation ──
 	function interp(v: number): string {
@@ -204,14 +207,14 @@
 						cx={xs(d.pcc)} cy={CY + d.jy}
 						r={2.8}
 						fill={d.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
-						opacity={isVis(d) ? 0.45 : 0.04}
+						opacity={dotVis[i] ? 0.45 : 0.04}
 						class="dot"
 					/>
 				{/each}
 
 				<!-- Named study dots with labels (filtered) -->
-				{#each named as s}
-					{@const vis = isVis(s)}
+				{#each named as s, si}
+					{@const vis = namedVis[si]}
 					{@const lx = xs(s.pcc)}
 					{@const ly = CY}
 					{@const col = s.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
@@ -285,26 +288,14 @@
 				<line x1={hiX} x2={hiX} y1={GCY - 7} y2={GCY + 7}
 					stroke={ptCol} stroke-width="1.8" class="ci-line"/>
 
-				<!-- Diamond at point estimate -->
-				<polygon
-					points="{ptX},{GCY - 10} {ptX + 8},{GCY} {ptX},{GCY + 10} {ptX - 8},{GCY}"
-					fill={ptCol} class="ci-line"
-				/>
+				<!-- Circle at point estimate -->
+				<circle cx={ptX} cy={GCY} r={6}
+					fill={ptCol} class="ci-line"/>
 
 				<!-- Value label -->
-				<text x={ptX} y={GCY - 16}
+				<text x={ptX} y={GCY - 14}
 					text-anchor="middle" class="pointer-val" fill={ptCol}>
 					{$tCtx.toFixed(3)}
-				</text>
-
-				<!-- CI bounds labels -->
-				<text x={loX} y={GCY - 12}
-					text-anchor="middle" class="ci-bound-label" fill={ptCol}>
-					{$tCILo.toFixed(2)}
-				</text>
-				<text x={hiX} y={GCY - 12}
-					text-anchor="middle" class="ci-bound-label" fill={ptCol}>
-					{$tCIHi.toFixed(2)}
 				</text>
 			</svg>
 

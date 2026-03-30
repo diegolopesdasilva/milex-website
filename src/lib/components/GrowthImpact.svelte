@@ -123,6 +123,9 @@
 	));
 	let visCount = $derived(dotVis.filter(Boolean).length);
 
+	// ── Button options (defined here to avoid `as` in template) ──
+	const periodOptions: Period[] = ['1950s', '1960s–80s', '1990s+'];
+
 	// ── Interpretation ──
 	function interp(v: number): string {
 		if (v >  0.20) return 'Studies of this type tend to find a <b>clearly positive</b> association — higher military spending linked to faster growth.';
@@ -154,7 +157,7 @@
 				<div class="btn-group">
 					<button class="tog" class:active={periodFilter === 'all'}
 						onclick={() => periodFilter = 'all'}>All</button>
-					{#each (['1950s', '1960s–80s', '1990s+'] as Period[]) as p}
+					{#each periodOptions as p}
 						<button class="tog" class:active={periodFilter === p}
 							onclick={() => periodFilter = p}>{p}</button>
 					{/each}

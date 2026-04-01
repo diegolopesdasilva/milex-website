@@ -395,18 +395,31 @@
 				{/each}
 			</div>
 
-			<!-- Right overlay: context text, positioned at fixed gap from stream edge -->
+			<!-- Right overlay: context text, follows stream silhouette via shape-outside -->
 			{#each events as event, i}
 				{@const pct = yearToPercent(event.year)}
-				{@const edgeX = contextPositions[i]?.x ?? 0}
+				{@const offsets = contextShapes[i]?.offsets ?? []}
 				{@const gap = 40}
+				{@const lineH = 30}
+				{@const totalH = offsets.length * lineH}
+				{@const polyPts = offsets.length > 0
+					? offsets.map((x, li) => `${x + gap}px ${li * lineH}px`).join(', ')
+						+ `, ${offsets[offsets.length - 1] + gap}px ${totalH}px, 0px ${totalH}px, 0px 0px`
+					: '0px 0px, 0px 100%, 0px 100%'}
 				<div
 					class="context-card"
 					class:visible={visible[i]}
 					style:top="{pct}%"
-					style:left="{edgeX + gap}px"
-					style:width="calc(100% - {edgeX + gap + 20}px)"
+					style:left="0"
+					style:width="calc(100% - 20px)"
 				>
+					<div
+						class="shape-float"
+						style:width="{Math.max(...offsets) + gap + 10}px"
+						style:height="{totalH}px"
+						style:shape-outside="polygon({polyPts})"
+						style:clip-path="polygon({polyPts})"
+					></div>
 					<p class="context-text">{event.context}</p>
 				</div>
 			{/each}
@@ -619,6 +632,11 @@
 		pointer-events: none;
 		z-index: 5;
 		overflow: hidden;
+	}
+
+	.shape-float {
+		float: left;
+		background: transparent;
 	}
 
 	.context-card:first-of-type {

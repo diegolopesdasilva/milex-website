@@ -14,7 +14,7 @@
 	// ── Types ──
 	type Period  = '1950s' | '1960s–80s' | '1990s+';
 	type Country = 'developing' | 'developed';
-	type PeriodFilter  = 'all' | Period;
+	type PeriodFilter  = Period;
 	type CountryFilter = Country;
 
 	// ── Moderator coefficients (HLM, Table 4 col 6) ──
@@ -23,15 +23,15 @@
 
 	// Approximate SEs derived from significance levels in Table 4
 	const SE_BASE = 0.015;
-	const SE_P: Record<PeriodFilter, number>  = { all: 0, '1950s': 0.115, '1960s–80s': 0, '1990s+': 0.103 };
+	const SE_P: Record<PeriodFilter, number>  = { '1950s': 0.115, '1960s–80s': 0, '1990s+': 0.103 };
 	const SE_C: Record<CountryFilter, number> = { developing: 0, developed: 0.062 };
 
 	// ── Filter state ──
-	let periodFilter:  PeriodFilter  = $state('all');
+	let periodFilter:  PeriodFilter  = $state('1960s–80s');
 	let countryFilter: CountryFilter = $state('developing');
 
 	// ── Contextual estimate + CI ──
-	let pMod   = $derived(periodFilter === 'all' ? 0 : MOD_PERIOD[periodFilter]);
+	let pMod   = $derived(MOD_PERIOD[periodFilter]);
 	let cMod   = $derived(MOD_COUNTRY[countryFilter]);
 	let rawCtx = $derived(RE_MEAN + pMod + cMod);
 	let ctxSE  = $derived(Math.sqrt(SE_BASE ** 2 + SE_P[periodFilter] ** 2 + SE_C[countryFilter] ** 2));
@@ -49,9 +49,9 @@
 	const ML = 35, MR = 35, MT = 32, MB = 46;
 	const PW = W - ML - MR;
 	const CY = MT + (H_SWARM - MT - MB) / 2 + 6;
-	const X_MIN = -0.65, X_MAX = 0.65;
+	const X_MIN = -0.8, X_MAX = 0.8;
 	function xs(v: number): number { return ML + ((v - X_MIN) / (X_MAX - X_MIN)) * PW; }
-	const TICKS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];
+	const TICKS = [-0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8];
 	const AX_S = H_SWARM - MB + 8;
 	const AX_G = H_GAUGE - 20;
 	const GCY = 34; // gauge vertical centre for CI line
@@ -95,7 +95,7 @@
 		const mean = RE_MEAN + MOD_PERIOD[g.period] + MOD_COUNTRY[g.country];
 		for (let i = 0; i < g.n; i++) {
 			allDots.push({
-				pcc: Math.max(-0.63, Math.min(0.63, mean + 0.14 * gauss())),
+				pcc: Math.max(-0.75, Math.min(0.75, mean + 0.14 * gauss())),
 				jy: (rng() - 0.5) * 82,
 				period: g.period,
 				country: g.country,
@@ -114,12 +114,10 @@
 
 	// ── Visibility (derived arrays for reactivity) ──
 	let dotVis = $derived(allDots.map(d =>
-		(periodFilter === 'all' || d.period === periodFilter)
-		&& d.country === countryFilter
+		d.period === periodFilter && d.country === countryFilter
 	));
 	let namedVis = $derived(named.map(s =>
-		(periodFilter === 'all' || s.period === periodFilter)
-		&& s.country === countryFilter
+		s.period === periodFilter && s.country === countryFilter
 	));
 	let visCount = $derived(dotVis.filter(Boolean).length);
 
@@ -155,8 +153,6 @@
 			<div class="filter-group">
 				<span class="filter-label">Time period of data</span>
 				<div class="btn-group">
-					<button class="tog" class:active={periodFilter === 'all'}
-						onclick={() => periodFilter = 'all'}>All</button>
 					{#each periodOptions as p}
 						<button class="tog" class:active={periodFilter === p}
 							onclick={() => periodFilter = p}>{p}</button>

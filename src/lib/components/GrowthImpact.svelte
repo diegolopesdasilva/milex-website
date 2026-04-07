@@ -2,9 +2,6 @@
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 
-	// ── Alptekin & Levine (2012) ──
-	// 32 studies · 169 estimates · 77 statistically significant
-
 	const RE_MEAN = 0.066;
 
 	type Period  = '1950s' | '1960s–80s' | '1990s+';
@@ -23,8 +20,10 @@
 	const X_YEAR_MIN = 1973, X_YEAR_MAX = 2011;
 	function xYear(yr: number): number { return ML + ((yr - X_YEAR_MIN) / (X_YEAR_MAX - X_YEAR_MIN)) * PW; }
 	function yPcc(pcc: number): number { return MT + PH - ((pcc - Y_MIN) / (Y_MAX - Y_MIN)) * PH; }
+	// Inverse scales (SVG coords → data)
+	function invXYear(px: number): number { return X_YEAR_MIN + ((px - ML) / PW) * (X_YEAR_MAX - X_YEAR_MIN); }
+	function invYPcc(py: number): number { return Y_MIN + ((MT + PH - py) / PH) * (Y_MAX - Y_MIN); }
 
-	// PCC axis for gauge
 	const PCC_MIN = -0.6, PCC_MAX = 0.6;
 	function xsPcc(v: number): number { return ML + ((v - PCC_MIN) / (PCC_MAX - PCC_MIN)) * PW; }
 	const PCC_TICKS = [-0.4, -0.2, 0, 0.2, 0.4];
@@ -77,7 +76,6 @@
 			});
 		}
 	}
-	// Named studies
 	allDots.push(
 		{ pcc:  0.383, year: 1978, period: '1950s',     country: 'developing' },
 		{ pcc:  0.131, year: 1983, period: '1960s–80s', country: 'developing' },
@@ -95,9 +93,8 @@
 	// ── OLS trend line with CI band ──
 	interface TrendResult {
 		slope: number; intercept: number;
-		// for CI band at each year
 		predict(yr: number): number;
-		ciHalf(yr: number): number; // ±1.96 * SE of prediction
+		ciHalf(yr: number): number;
 	}
 
 	function computeTrend(dots: Dot[]): TrendResult {
@@ -108,13 +105,10 @@
 		const denom = n * sxx - sx * sx;
 		const slope = denom !== 0 ? (n * sxy - sx * sy) / denom : 0;
 		const intercept = (sy - slope * sx) / n;
-
-		// Residual SE
 		let ssr = 0;
 		for (const d of dots) { const r = d.pcc - (slope * d.year + intercept); ssr += r * r; }
 		const s2 = ssr / (n - 2);
 		const sxx_centered = sxx - n * xbar * xbar;
-
 		function predict(yr: number) { return slope * yr + intercept; }
 		function ciHalf(yr: number) {
 			const h = 1 / n + (yr - xbar) ** 2 / sxx_centered;
@@ -126,7 +120,6 @@
 	const trendDeveloping = computeTrend(devingDots);
 	const trendDeveloped  = computeTrend(devedDots);
 
-	// Build CI band polygon points (sample every 2 years)
 	function ciBandPath(trend: TrendResult): string {
 		const years: number[] = [];
 		for (let yr = X_YEAR_MIN; yr <= X_YEAR_MAX; yr += 2) years.push(yr);
@@ -139,16 +132,98 @@
 	const ciBandDeveloping = ciBandPath(trendDeveloping);
 	const ciBandDeveloped  = ciBandPath(trendDeveloped);
 
-	// ── Mean + CI for each panel's gauge ──
-	function meanAndSE(dots: Dot[]): { mean: number; se: number } {
+	// ── Mean + CI ──
+	function meanAndSE(dots: Dot[]): { mean: number; se: number; n: number } {
 		const n = dots.length;
+		if (n === 0) return { mean: 0, se: 0, n: 0 };
 		const m = dots.reduce((s, d) => s + d.pcc, 0) / n;
+		if (n === 1) return { mean: m, se: 0, n: 1 };
 		const variance = dots.reduce((s, d) => s + (d.pcc - m) ** 2, 0) / (n - 1);
-		return { mean: m, se: Math.sqrt(variance / n) };
+		return { mean: m, se: Math.sqrt(variance / n), n };
 	}
 
-	const statsDeveloping = meanAndSE(devingDots);
-	const statsDeveloped  = meanAndSE(devedDots);
+	// ── Selection state for each panel ──
+	// Selection box in SVG coordinates
+	let selDeveloping: { x0: number; y0: number; x1: number; y1: number } | null = $state(null);
+	let selDeveloped:  { x0: number; y0: number; x1: number; y1: number } | null = $state(null);
+	let draggingPanel: 'developing' | 'developed' | null = $state(null);
+
+	function getSvgPoint(e: MouseEvent, svg: SVGSVGElement): { x: number; y: number } {
+		const pt = svg.createSVGPoint();
+		pt.x = e.clientX;
+		pt.y = e.clientY;
+		const ctm = svg.getScreenCTM()!.inverse();
+		const svgPt = pt.matrixTransform(ctm);
+		return { x: svgPt.x, y: svgPt.y };
+	}
+
+	function onMouseDown(e: MouseEvent, panel: 'developing' | 'developed') {
+		const svg = (e.currentTarget as SVGSVGElement);
+		const pt = getSvgPoint(e, svg);
+		if (pt.x < ML || pt.x > W - MR || pt.y < MT || pt.y > MT + PH) return;
+		draggingPanel = panel;
+		const sel = { x0: pt.x, y0: pt.y, x1: pt.x, y1: pt.y };
+		if (panel === 'developing') selDeveloping = sel;
+		else selDeveloped = sel;
+	}
+
+	function onMouseMove(e: MouseEvent) {
+		if (!draggingPanel) return;
+		const svg = (e.currentTarget as SVGSVGElement);
+		const pt = getSvgPoint(e, svg);
+		const clamped = { x: Math.max(ML, Math.min(W - MR, pt.x)), y: Math.max(MT, Math.min(MT + PH, pt.y)) };
+		if (draggingPanel === 'developing' && selDeveloping) {
+			selDeveloping = { ...selDeveloping, x1: clamped.x, y1: clamped.y };
+		} else if (draggingPanel === 'developed' && selDeveloped) {
+			selDeveloped = { ...selDeveloped, x1: clamped.x, y1: clamped.y };
+		}
+	}
+
+	function onMouseUp() {
+		draggingPanel = null;
+	}
+
+	function dotInSelection(d: Dot, sel: { x0: number; y0: number; x1: number; y1: number } | null): boolean {
+		if (!sel) return false;
+		const dx = xYear(d.year);
+		const dy = yPcc(d.pcc);
+		const xMin = Math.min(sel.x0, sel.x1), xMax = Math.max(sel.x0, sel.x1);
+		const yMin = Math.min(sel.y0, sel.y1), yMax = Math.max(sel.y0, sel.y1);
+		return dx >= xMin && dx <= xMax && dy >= yMin && dy <= yMax;
+	}
+
+	// Is the selection large enough to be meaningful (not just a click)?
+	function selIsActive(sel: { x0: number; y0: number; x1: number; y1: number } | null): boolean {
+		if (!sel) return false;
+		return Math.abs(sel.x1 - sel.x0) > 5 && Math.abs(sel.y1 - sel.y0) > 5;
+	}
+
+	// Selected dots per panel
+	let selDevingDots = $derived(selIsActive(selDeveloping)
+		? devingDots.filter(d => dotInSelection(d, selDeveloping)) : devingDots);
+	let selDevedDots = $derived(selIsActive(selDeveloped)
+		? devedDots.filter(d => dotInSelection(d, selDeveloped)) : devedDots);
+
+	let statsDeveloping = $derived(meanAndSE(selDevingDots));
+	let statsDeveloped  = $derived(meanAndSE(selDevedDots));
+
+	let hasDevingSel = $derived(selIsActive(selDeveloping));
+	let hasDevedSel  = $derived(selIsActive(selDeveloped));
+
+	function clearSelection(panel: 'developing' | 'developed') {
+		if (panel === 'developing') selDeveloping = null;
+		else selDeveloped = null;
+	}
+
+	// Rect attributes for selection box
+	function selRect(sel: { x0: number; y0: number; x1: number; y1: number }) {
+		return {
+			x: Math.min(sel.x0, sel.x1),
+			y: Math.min(sel.y0, sel.y1),
+			width: Math.abs(sel.x1 - sel.x0),
+			height: Math.abs(sel.y1 - sel.y0),
+		};
+	}
 
 	const Y_TICKS = [-0.4, -0.2, 0, 0.2, 0.4, 0.6];
 	const X_YEAR_TICKS = [1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010];
@@ -160,9 +235,9 @@
 		return 'These studies tend to find a <b>negative</b> association — higher military spending linked to slower growth.';
 	}
 
-	const panels = [
-		{ label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING, trend: trendDeveloping, ciBand: ciBandDeveloping, stats: statsDeveloping },
-		{ label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED,  trend: trendDeveloped,  ciBand: ciBandDeveloped,  stats: statsDeveloped },
+	const panelData = [
+		{ key: 'developing' as const, label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING, trend: trendDeveloping, ciBand: ciBandDeveloping },
+		{ key: 'developed' as const,  label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED,  trend: trendDeveloped,  ciBand: ciBandDeveloped },
 	];
 </script>
 
@@ -184,20 +259,29 @@
 		<div class="chart-block">
 			<p class="chart-label">
 				77 statistically significant estimates by publication year
+				<span class="chart-sublabel">— drag to select dots and compute their mean</span>
 			</p>
 			<div class="scatter-stack">
-				{#each panels as panel}
+				{#each panelData as panel}
+					{@const sel = panel.key === 'developing' ? selDeveloping : selDeveloped}
+					{@const stats = panel.key === 'developing' ? statsDeveloping : statsDeveloped}
+					{@const hasSel = panel.key === 'developing' ? hasDevingSel : hasDevedSel}
+					{@const selDots = panel.key === 'developing' ? selDevingDots : selDevedDots}
 					<div class="scatter-panel">
 						<p class="panel-label" style:color={panel.col}>
 							{panel.label}
 							<span class="panel-count">({panel.dots.length} estimates)</span>
 						</p>
 
-						<!-- Scatterplot -->
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<svg
 							viewBox="0 0 {W} {H_SCATTER}"
 							preserveAspectRatio="xMidYMid meet"
-							class="chart-svg"
+							class="chart-svg scatter-svg"
+							onmousedown={(e) => onMouseDown(e, panel.key)}
+							onmousemove={onMouseMove}
+							onmouseup={onMouseUp}
+							onmouseleave={onMouseUp}
 						>
 							<!-- Zone shading -->
 							<rect x={ML} y={MT} width={PW} height={yPcc(0) - MT}
@@ -239,10 +323,22 @@
 									cx={xYear(d.year)} cy={yPcc(d.pcc)}
 									r={4}
 									fill={panel.col}
-									opacity={0.6}
-									stroke="var(--bg)" stroke-width="0.8"
+									opacity={hasSel ? (dotInSelection(d, sel) ? 0.85 : 0.15) : 0.6}
+									stroke={hasSel && dotInSelection(d, sel) ? panel.col : 'var(--bg)'}
+									stroke-width={hasSel && dotInSelection(d, sel) ? 1.5 : 0.8}
 								/>
 							{/each}
+
+							<!-- Selection rectangle -->
+							{#if sel && selIsActive(sel)}
+								<rect
+									x={selRect(sel).x} y={selRect(sel).y}
+									width={selRect(sel).width} height={selRect(sel).height}
+									fill={panel.col} fill-opacity="0.08"
+									stroke={panel.col} stroke-width="1.5" stroke-dasharray="4,3"
+									rx="3"
+								/>
+							{/if}
 
 							<!-- Y-axis -->
 							{#each Y_TICKS as t}
@@ -280,9 +376,14 @@
 						<!-- Gauge for this panel -->
 						<div class="panel-gauge">
 							<p class="gauge-label">
-								Mean PCC = {panel.stats.mean.toFixed(3)}
+								{#if hasSel}
+									Selection: {selDots.length} of {panel.dots.length} estimates, mean PCC = {stats.mean.toFixed(3)}
+									<button class="clear-btn" onclick={() => clearSelection(panel.key)}>Clear</button>
+								{:else}
+									All {panel.dots.length} estimates, mean PCC = {stats.mean.toFixed(3)}
+								{/if}
 								<span class="gauge-sublabel">
-									(95% CI: {(panel.stats.mean - 1.96 * panel.stats.se).toFixed(3)} to {(panel.stats.mean + 1.96 * panel.stats.se).toFixed(3)})
+									(95% CI: {(stats.mean - 1.96 * stats.se).toFixed(3)} to {(stats.mean + 1.96 * stats.se).toFixed(3)})
 								</span>
 							</p>
 							<svg
@@ -312,26 +413,26 @@
 
 								<!-- CI whisker -->
 								<line
-									x1={xsPcc(panel.stats.mean - 1.96 * panel.stats.se)}
-									x2={xsPcc(panel.stats.mean + 1.96 * panel.stats.se)}
+									x1={xsPcc(stats.mean - 1.96 * stats.se)}
+									x2={xsPcc(stats.mean + 1.96 * stats.se)}
 									y1={GCY} y2={GCY}
 									stroke={panel.col} stroke-width="2.5" stroke-linecap="round"/>
 								<line
-									x1={xsPcc(panel.stats.mean - 1.96 * panel.stats.se)}
-									x2={xsPcc(panel.stats.mean - 1.96 * panel.stats.se)}
+									x1={xsPcc(stats.mean - 1.96 * stats.se)}
+									x2={xsPcc(stats.mean - 1.96 * stats.se)}
 									y1={GCY - 6} y2={GCY + 6}
 									stroke={panel.col} stroke-width="1.5"/>
 								<line
-									x1={xsPcc(panel.stats.mean + 1.96 * panel.stats.se)}
-									x2={xsPcc(panel.stats.mean + 1.96 * panel.stats.se)}
+									x1={xsPcc(stats.mean + 1.96 * stats.se)}
+									x2={xsPcc(stats.mean + 1.96 * stats.se)}
 									y1={GCY - 6} y2={GCY + 6}
 									stroke={panel.col} stroke-width="1.5"/>
 								<circle
-									cx={xsPcc(panel.stats.mean)} cy={GCY}
+									cx={xsPcc(stats.mean)} cy={GCY}
 									r={5} fill={panel.col}/>
 							</svg>
-							<p class="interp-text" class:neg={panel.stats.mean < -0.05} class:neutral={panel.stats.mean >= -0.05 && panel.stats.mean <= 0.05}>
-								{@html interp(panel.stats.mean)}
+							<p class="interp-text" class:neg={stats.mean < -0.05} class:neutral={stats.mean >= -0.05 && stats.mean <= 0.05}>
+								{@html interp(stats.mean)}
 							</p>
 						</div>
 					</div>
@@ -388,7 +489,6 @@
 		color: var(--text);
 	}
 
-	/* ── Charts ── */
 	.chart-block {
 		margin-top: 2rem;
 	}
@@ -403,13 +503,24 @@
 		margin: 0 0 0.5rem;
 	}
 
+	.chart-sublabel {
+		font-weight: 300;
+		text-transform: none;
+		letter-spacing: 0;
+		color: var(--text-light);
+	}
+
 	.chart-svg {
 		width: 100%;
 		height: auto;
 		display: block;
 	}
 
-	/* ── Scatter panels (stacked) ── */
+	.scatter-svg {
+		cursor: crosshair;
+		user-select: none;
+	}
+
 	.scatter-stack {
 		display: flex;
 		flex-direction: column;
@@ -436,7 +547,6 @@
 		color: var(--text-light);
 	}
 
-	/* ── Per-panel gauge ── */
 	.panel-gauge {
 		margin-top: 0.8rem;
 	}
@@ -454,7 +564,26 @@
 		color: var(--text-light);
 	}
 
-	/* ── SVG text ── */
+	.clear-btn {
+		font-family: var(--font-sans);
+		font-size: 0.78rem;
+		font-weight: 400;
+		color: var(--text-light);
+		background: none;
+		border: 1px solid var(--border-light);
+		border-radius: 3px;
+		padding: 0.15rem 0.5rem;
+		cursor: pointer;
+		margin-left: 0.5rem;
+		vertical-align: middle;
+		transition: color 0.2s, border-color 0.2s;
+	}
+
+	.clear-btn:hover {
+		color: var(--text);
+		border-color: var(--text-muted);
+	}
+
 	:global(.zone-label) {
 		font-family: var(--font-sans);
 		font-size: 11px;
@@ -483,7 +612,6 @@
 		fill: var(--text-muted);
 	}
 
-	/* ── Interpretation text ── */
 	.interp-text {
 		font-family: var(--font-sans);
 		font-size: clamp(1rem, 1.8vw, 1.15rem);
@@ -502,7 +630,6 @@
 		color: inherit;
 	}
 
-	/* ── Methodology note ── */
 	.methodology-note {
 		font-family: var(--font-sans);
 		font-size: clamp(0.88rem, 1.4vw, 1rem);
@@ -519,7 +646,6 @@
 		font-style: italic;
 	}
 
-	/* ── Responsive ── */
 	@media (max-width: 768px) {
 		.growth-section { padding: 4rem 0 6rem; }
 		.section-title { font-size: 2rem; }

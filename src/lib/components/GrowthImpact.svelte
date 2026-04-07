@@ -235,20 +235,16 @@
 					/>
 				{/each}
 
-				<!-- Named study markers (tick marks + labels) -->
+				<!-- Named study tick marks -->
 				{#each named as s, si}
 					{@const vis = namedVis[si]}
 					{@const lx = xs(s.pcc)}
 					{@const col = s.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
-					{@const labelY = s.above ? BAR_TOP - 20 : AX_B + 28}
 					{@const tickTop = s.above ? BAR_TOP - 8 : AX_B}
 					{@const tickBot = s.above ? BAR_TOP : AX_B + 8}
 					<line x1={lx} x2={lx} y1={tickTop} y2={tickBot}
 						stroke={col} stroke-width="1.5" opacity={vis ? 0.8 : 0.06}
 						class="density-slice"/>
-					<text x={lx} y={labelY}
-						text-anchor="middle" class="study-label" fill={col}
-						opacity={vis ? 1 : 0.06}>{s.label}</text>
 				{/each}
 
 				<!-- Bar border -->

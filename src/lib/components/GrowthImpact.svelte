@@ -4,37 +4,32 @@
 
 	// ── Alptekin & Levine (2012) ──
 	// 32 studies · 169 estimates · 77 statistically significant
-	// RE pooled PCC = 0.066 [0.037, 0.095]
-	// Q(168) = 593.1 → high heterogeneity
 
 	const RE_MEAN = 0.066;
 
-	// ── Types ──
 	type Period  = '1950s' | '1960s–80s' | '1990s+';
 	type Country = 'developing' | 'developed';
 
-	// ── Moderator coefficients (HLM, Table 4 col 6) ──
 	const MOD_PERIOD:  Record<Period, number>  = { '1950s': 0.253, '1960s–80s': 0, '1990s+': -0.226 };
 	const MOD_COUNTRY: Record<Country, number> = { developing: 0, developed: 0.185 };
 
 	// ── SVG layout ──
-	const W = 800, H_SCATTER = 280, H_GAUGE = 80;
+	const W = 800, H_SCATTER = 360, H_GAUGE = 70;
 	const ML = 60, MR = 30, MT = 20, MB = 50;
 	const PW = W - ML - MR;
 	const PH = H_SCATTER - MT - MB;
 
-	// Scales
 	const Y_MIN = -0.6, Y_MAX = 0.7;
 	const X_YEAR_MIN = 1973, X_YEAR_MAX = 2011;
 	function xYear(yr: number): number { return ML + ((yr - X_YEAR_MIN) / (X_YEAR_MAX - X_YEAR_MIN)) * PW; }
 	function yPcc(pcc: number): number { return MT + PH - ((pcc - Y_MIN) / (Y_MAX - Y_MIN)) * PH; }
 
 	// PCC axis for gauge
-	const PCC_MIN = -0.8, PCC_MAX = 0.8;
-	function xsPcc(v: number): number { return ML + ((v - PCC_MIN) / (PCC_MAX - PCC_MIN)) * (W - ML - MR); }
-	const PCC_TICKS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];
-	const AX_G = H_GAUGE - 20;
-	const GCY = 34;
+	const PCC_MIN = -0.6, PCC_MAX = 0.6;
+	function xsPcc(v: number): number { return ML + ((v - PCC_MIN) / (PCC_MAX - PCC_MIN)) * PW; }
+	const PCC_TICKS = [-0.4, -0.2, 0, 0.2, 0.4];
+	const AX_G = H_GAUGE - 18;
+	const GCY = 30;
 
 	// ── Seeded RNG ──
 	function mulberry32(seed: number) {
@@ -52,14 +47,12 @@
 		return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 	}
 
-	// ── Year ranges for each period (publication years) ──
 	const YEAR_RANGE: Record<Period, [number, number]> = {
 		'1950s':     [1973, 1984],
 		'1960s–80s': [1983, 2002],
 		'1990s+':    [1997, 2010],
 	};
 
-	// ── Generate 77 significant dots with year + country ──
 	interface Dot { pcc: number; year: number; period: Period; country: Country }
 
 	const dotGroups: { period: Period; country: Country; n: number }[] = [
@@ -69,7 +62,7 @@
 		{ period: '1960s–80s', country: 'developed',  n: 14 },
 		{ period: '1990s+',    country: 'developing', n: 20 },
 		{ period: '1990s+',    country: 'developed',  n: 17 },
-	]; // total = 77
+	];
 
 	const allDots: Dot[] = [];
 	for (const g of dotGroups) {
@@ -84,79 +77,82 @@
 			});
 		}
 	}
-
-	// Named studies (merged into allDots pool)
-	const namedStudies: Dot[] = [
+	// Named studies
+	allDots.push(
 		{ pcc:  0.383, year: 1978, period: '1950s',     country: 'developing' },
 		{ pcc:  0.131, year: 1983, period: '1960s–80s', country: 'developing' },
 		{ pcc: -0.284, year: 1989, period: '1960s–80s', country: 'developing' },
 		{ pcc: -0.456, year: 1997, period: '1990s+',    country: 'developing' },
 		{ pcc: -0.148, year: 2007, period: '1990s+',    country: 'developing' },
-	];
-	allDots.push(...namedStudies);
+	);
 
-	// Colours
 	const COL_DEVELOPING = '#DD9D7C';
 	const COL_DEVELOPED  = '#567B57';
 
-	// Split dots by country
 	const devingDots = allDots.filter(d => d.country === 'developing');
 	const devedDots  = allDots.filter(d => d.country === 'developed');
 
-	// ── OLS trend line ──
-	function trendLine(dots: Dot[]): { slope: number; intercept: number } {
-		const n = dots.length;
-		if (n < 2) return { slope: 0, intercept: 0 };
-		let sx = 0, sy = 0, sxx = 0, sxy = 0;
-		for (const d of dots) {
-			sx += d.year; sy += d.pcc; sxx += d.year * d.year; sxy += d.year * d.pcc;
-		}
-		const denom = n * sxx - sx * sx;
-		if (Math.abs(denom) < 1e-10) return { slope: 0, intercept: sy / n };
-		const slope = (n * sxy - sx * sy) / denom;
-		const intercept = (sy - slope * sx) / n;
-		return { slope, intercept };
+	// ── OLS trend line with CI band ──
+	interface TrendResult {
+		slope: number; intercept: number;
+		// for CI band at each year
+		predict(yr: number): number;
+		ciHalf(yr: number): number; // ±1.96 * SE of prediction
 	}
 
-	const trendDeveloping = trendLine(devingDots);
-	const trendDeveloped  = trendLine(devedDots);
+	function computeTrend(dots: Dot[]): TrendResult {
+		const n = dots.length;
+		let sx = 0, sy = 0, sxx = 0, sxy = 0;
+		for (const d of dots) { sx += d.year; sy += d.pcc; sxx += d.year * d.year; sxy += d.year * d.pcc; }
+		const xbar = sx / n;
+		const denom = n * sxx - sx * sx;
+		const slope = denom !== 0 ? (n * sxy - sx * sy) / denom : 0;
+		const intercept = (sy - slope * sx) / n;
 
-	// Ticks
-	const Y_TICKS = [-0.4, -0.2, 0, 0.2, 0.4, 0.6];
-	const X_YEAR_TICKS = [1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010];
+		// Residual SE
+		let ssr = 0;
+		for (const d of dots) { const r = d.pcc - (slope * d.year + intercept); ssr += r * r; }
+		const s2 = ssr / (n - 2);
+		const sxx_centered = sxx - n * xbar * xbar;
 
-	// ── Panel selection state → drives gauge ──
-	type PanelKey = 'developing' | 'developed';
-	let selectedPanel: PanelKey = $state('developing');
+		function predict(yr: number) { return slope * yr + intercept; }
+		function ciHalf(yr: number) {
+			const h = 1 / n + (yr - xbar) ** 2 / sxx_centered;
+			return 1.96 * Math.sqrt(s2 * h);
+		}
+		return { slope, intercept, predict, ciHalf };
+	}
 
-	// Compute mean and SE from selected panel's dots
+	const trendDeveloping = computeTrend(devingDots);
+	const trendDeveloped  = computeTrend(devedDots);
+
+	// Build CI band polygon points (sample every 2 years)
+	function ciBandPath(trend: TrendResult): string {
+		const years: number[] = [];
+		for (let yr = X_YEAR_MIN; yr <= X_YEAR_MAX; yr += 2) years.push(yr);
+		if (years[years.length - 1] !== X_YEAR_MAX) years.push(X_YEAR_MAX);
+		const upper = years.map(yr => `${xYear(yr).toFixed(1)},${yPcc(trend.predict(yr) + trend.ciHalf(yr)).toFixed(1)}`);
+		const lower = [...years].reverse().map(yr => `${xYear(yr).toFixed(1)},${yPcc(trend.predict(yr) - trend.ciHalf(yr)).toFixed(1)}`);
+		return `M${upper.join(' L')} L${lower.join(' L')} Z`;
+	}
+
+	const ciBandDeveloping = ciBandPath(trendDeveloping);
+	const ciBandDeveloped  = ciBandPath(trendDeveloped);
+
+	// ── Mean + CI for each panel's gauge ──
 	function meanAndSE(dots: Dot[]): { mean: number; se: number } {
 		const n = dots.length;
-		if (n === 0) return { mean: 0, se: 0 };
 		const m = dots.reduce((s, d) => s + d.pcc, 0) / n;
-		if (n === 1) return { mean: m, se: 0 };
 		const variance = dots.reduce((s, d) => s + (d.pcc - m) ** 2, 0) / (n - 1);
 		return { mean: m, se: Math.sqrt(variance / n) };
 	}
 
-	let selectedDots = $derived(selectedPanel === 'developing' ? devingDots : devedDots);
-	let stats = $derived(meanAndSE(selectedDots));
-	let gaugeMean = $derived(stats.mean);
-	let gaugeCILo = $derived(stats.mean - 1.96 * stats.se);
-	let gaugeCIHi = $derived(stats.mean + 1.96 * stats.se);
+	const statsDeveloping = meanAndSE(devingDots);
+	const statsDeveloped  = meanAndSE(devedDots);
 
-	// Tweened gauge values
-	const tCtx  = tweened(RE_MEAN, { duration: 500, easing: cubicOut });
-	const tCILo = tweened(RE_MEAN - 0.03, { duration: 500, easing: cubicOut });
-	const tCIHi = tweened(RE_MEAN + 0.03, { duration: 500, easing: cubicOut });
-	$effect(() => { tCtx.set(gaugeMean); tCILo.set(gaugeCILo); tCIHi.set(gaugeCIHi); });
+	const Y_TICKS = [-0.4, -0.2, 0, 0.2, 0.4, 0.6];
+	const X_YEAR_TICKS = [1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010];
 
-	let ptX   = $derived(xsPcc($tCtx));
-	let loX   = $derived(xsPcc($tCILo));
-	let hiX   = $derived(xsPcc($tCIHi));
-	let ptCol = $derived(selectedPanel === 'developing' ? COL_DEVELOPING : COL_DEVELOPED);
-
-	// ── Interpretation ──
 	function interp(v: number): string {
 		if (v >  0.20) return 'These studies tend to find a <b>clearly positive</b> association — higher military spending linked to faster growth.';
 		if (v >  0.05) return 'These studies tend to find a <b>weakly positive</b> association — slightly higher growth with higher spending.';
@@ -164,10 +160,9 @@
 		return 'These studies tend to find a <b>negative</b> association — higher military spending linked to slower growth.';
 	}
 
-	// Panel data for template
-	const panels: { key: PanelKey; label: string; dots: Dot[]; col: string; trend: { slope: number; intercept: number } }[] = [
-		{ key: 'developing', label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING, trend: trendDeveloping },
-		{ key: 'developed',  label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED,  trend: trendDeveloped },
+	const panels = [
+		{ label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING, trend: trendDeveloping, ciBand: ciBandDeveloping, stats: statsDeveloping },
+		{ label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED,  trend: trendDeveloped,  ciBand: ciBandDeveloped,  stats: statsDeveloped },
 	];
 </script>
 
@@ -186,23 +181,19 @@
 			Where you look, and when, matters enormously.
 		</p>
 
-		<!-- ══ Scatterplots (stacked vertically) ══ -->
 		<div class="chart-block">
 			<p class="chart-label">
 				77 statistically significant estimates by publication year
-				<span class="chart-sublabel">— click a panel to update the summary below</span>
 			</p>
 			<div class="scatter-stack">
 				{#each panels as panel}
-					<button
-						class="scatter-panel"
-						class:selected={selectedPanel === panel.key}
-						onclick={() => selectedPanel = panel.key}
-					>
+					<div class="scatter-panel">
 						<p class="panel-label" style:color={panel.col}>
 							{panel.label}
 							<span class="panel-count">({panel.dots.length} estimates)</span>
 						</p>
+
+						<!-- Scatterplot -->
 						<svg
 							viewBox="0 0 {W} {H_SCATTER}"
 							preserveAspectRatio="xMidYMid meet"
@@ -232,15 +223,17 @@
 									stroke="var(--border-light)" stroke-width="0.5" opacity="0.3"/>
 							{/each}
 
-							<!-- Trend line -->
+							<!-- Trend CI band -->
+							<path d={panel.ciBand} fill={panel.col} opacity="0.12"/>
+
+							<!-- Trend line (continuous) -->
 							<line
-								x1={xYear(X_YEAR_MIN)} y1={yPcc(panel.trend.slope * X_YEAR_MIN + panel.trend.intercept)}
-								x2={xYear(X_YEAR_MAX)} y2={yPcc(panel.trend.slope * X_YEAR_MAX + panel.trend.intercept)}
-								stroke={panel.col} stroke-width="2" opacity="0.5"
-								stroke-dasharray="6,4"
+								x1={xYear(X_YEAR_MIN)} y1={yPcc(panel.trend.predict(X_YEAR_MIN))}
+								x2={xYear(X_YEAR_MAX)} y2={yPcc(panel.trend.predict(X_YEAR_MAX))}
+								stroke={panel.col} stroke-width="2.5" opacity="0.7"
 							/>
 
-							<!-- Dots (uniform size) -->
+							<!-- Dots -->
 							{#each panel.dots as d}
 								<circle
 									cx={xYear(d.year)} cy={yPcc(d.pcc)}
@@ -283,69 +276,67 @@
 							<text x={W - MR - 4} y={yPcc(0) - 6}
 								text-anchor="end" class="zero-label">PCC = 0</text>
 						</svg>
-					</button>
+
+						<!-- Gauge for this panel -->
+						<div class="panel-gauge">
+							<p class="gauge-label">
+								Mean PCC = {panel.stats.mean.toFixed(3)}
+								<span class="gauge-sublabel">
+									(95% CI: {(panel.stats.mean - 1.96 * panel.stats.se).toFixed(3)} to {(panel.stats.mean + 1.96 * panel.stats.se).toFixed(3)})
+								</span>
+							</p>
+							<svg
+								viewBox="0 0 {W} {H_GAUGE}"
+								preserveAspectRatio="xMidYMid meet"
+								class="chart-svg"
+							>
+								<!-- Zone shading -->
+								<rect x={ML} y={4} width={xsPcc(0) - ML} height={H_GAUGE - 22}
+									fill="var(--region-africa)" opacity="0.04"/>
+								<rect x={xsPcc(0)} y={4} width={W - MR - xsPcc(0)} height={H_GAUGE - 22}
+									fill="var(--region-americas)" opacity="0.04"/>
+
+								<!-- Zero reference -->
+								<line x1={xsPcc(0)} x2={xsPcc(0)} y1={4} y2={AX_G}
+									stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>
+
+								<!-- Axis -->
+								<line x1={ML} x2={W - MR} y1={AX_G} y2={AX_G}
+									stroke="var(--border-light)" stroke-width="1"/>
+								{#each PCC_TICKS as t}
+									<line x1={xsPcc(t)} x2={xsPcc(t)} y1={AX_G - 3} y2={AX_G + 5}
+										stroke="var(--border-light)" stroke-width="1"/>
+									<text x={xsPcc(t)} y={AX_G + 16}
+										text-anchor="middle" class="tick-label">{t.toFixed(1)}</text>
+								{/each}
+
+								<!-- CI whisker -->
+								<line
+									x1={xsPcc(panel.stats.mean - 1.96 * panel.stats.se)}
+									x2={xsPcc(panel.stats.mean + 1.96 * panel.stats.se)}
+									y1={GCY} y2={GCY}
+									stroke={panel.col} stroke-width="2.5" stroke-linecap="round"/>
+								<line
+									x1={xsPcc(panel.stats.mean - 1.96 * panel.stats.se)}
+									x2={xsPcc(panel.stats.mean - 1.96 * panel.stats.se)}
+									y1={GCY - 6} y2={GCY + 6}
+									stroke={panel.col} stroke-width="1.5"/>
+								<line
+									x1={xsPcc(panel.stats.mean + 1.96 * panel.stats.se)}
+									x2={xsPcc(panel.stats.mean + 1.96 * panel.stats.se)}
+									y1={GCY - 6} y2={GCY + 6}
+									stroke={panel.col} stroke-width="1.5"/>
+								<circle
+									cx={xsPcc(panel.stats.mean)} cy={GCY}
+									r={5} fill={panel.col}/>
+							</svg>
+							<p class="interp-text" class:neg={panel.stats.mean < -0.05} class:neutral={panel.stats.mean >= -0.05 && panel.stats.mean <= 0.05}>
+								{@html interp(panel.stats.mean)}
+							</p>
+						</div>
+					</div>
 				{/each}
 			</div>
-		</div>
-
-		<!-- ══ Summary gauge (driven by panel selection) ══ -->
-		<div class="context-block">
-			<p class="chart-label">
-				Mean estimate with 95% confidence interval
-				<span class="chart-sublabel">
-					— {selectedPanel === 'developing' ? 'Developing' : 'Developed'} countries
-					({selectedDots.length} estimates, mean PCC = {gaugeMean.toFixed(3)})
-				</span>
-			</p>
-
-			<svg
-				viewBox="0 0 {W} {H_GAUGE}"
-				preserveAspectRatio="xMidYMid meet"
-				class="chart-svg gauge-svg"
-				aria-label="Mean PCC estimate with confidence interval"
-			>
-				<!-- Zone shading -->
-				<rect x={ML} y={4} width={xsPcc(0) - ML} height={H_GAUGE - 24}
-					fill="var(--region-africa)" opacity="0.04"/>
-				<rect x={xsPcc(0)} y={4} width={W - MR - xsPcc(0)} height={H_GAUGE - 24}
-					fill="var(--region-americas)" opacity="0.04"/>
-
-				<!-- Zero reference -->
-				<line x1={xsPcc(0)} x2={xsPcc(0)} y1={4} y2={AX_G}
-					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>
-
-				<!-- Axis -->
-				<line x1={ML} x2={W - MR} y1={AX_G} y2={AX_G}
-					stroke="var(--border-light)" stroke-width="1.5"/>
-				{#each PCC_TICKS as t}
-					<line x1={xsPcc(t)} x2={xsPcc(t)} y1={AX_G - 4} y2={AX_G + 7}
-						stroke="var(--border-light)" stroke-width="1"/>
-					<text x={xsPcc(t)} y={AX_G + 18}
-						text-anchor="middle" class="tick-label">{t.toFixed(1)}</text>
-				{/each}
-
-				<!-- CI whisker line -->
-				<line x1={loX} x2={hiX} y1={GCY} y2={GCY}
-					stroke={ptCol} stroke-width="2.5" stroke-linecap="round" class="ci-line"/>
-				<line x1={loX} x2={loX} y1={GCY - 7} y2={GCY + 7}
-					stroke={ptCol} stroke-width="1.8" class="ci-line"/>
-				<line x1={hiX} x2={hiX} y1={GCY - 7} y2={GCY + 7}
-					stroke={ptCol} stroke-width="1.8" class="ci-line"/>
-
-				<!-- Circle at point estimate -->
-				<circle cx={ptX} cy={GCY} r={6}
-					fill={ptCol} class="ci-line"/>
-
-				<!-- Value label -->
-				<text x={ptX} y={GCY - 14}
-					text-anchor="middle" class="pointer-val" fill={ptCol}>
-					{$tCtx.toFixed(3)}
-				</text>
-			</svg>
-
-			<p class="interp-text" class:neg={gaugeMean < -0.05} class:neutral={gaugeMean >= -0.05 && gaugeMean <= 0.05}>
-				{@html interp(gaugeMean)}
-			</p>
 		</div>
 
 		<p class="methodology-note">
@@ -354,7 +345,8 @@
 			77 are statistically significant (26 negative, 51 positive). Dot positions are simulated from
 			group-specific distributions shifted by the HLM meta-regression moderator coefficients
 			(Table&thinsp;4): period dummies (1950s: +0.253; 1990s+: −0.226) and developed-country dummy (+0.185).
-			Publication years are approximate within each period. The trend line is a simple OLS fit.
+			Publication years are approximate within each period. The trend line is a simple OLS fit
+			with a 95% confidence band for the regression line.
 			No publication bias detected (FAT: β₀ = 0.112, t = 0.43, p &gt; 0.05).
 			A genuine effect was confirmed (PET: β₁ = 0.099, t = 3.48, p &lt; 0.01).
 		</p>
@@ -397,8 +389,7 @@
 	}
 
 	/* ── Charts ── */
-	.chart-block,
-	.context-block {
+	.chart-block {
 		margin-top: 2rem;
 	}
 
@@ -412,22 +403,6 @@
 		margin: 0 0 0.5rem;
 	}
 
-	.chart-sublabel {
-		font-weight: 300;
-		text-transform: none;
-		letter-spacing: 0;
-		color: var(--text-light);
-	}
-
-	.context-sub {
-		font-family: var(--font-sans);
-		font-size: 0.92rem;
-		font-weight: 300;
-		color: var(--text-light);
-		line-height: 1.6;
-		margin: 0 0 1rem;
-	}
-
 	.chart-svg {
 		width: 100%;
 		height: auto;
@@ -438,29 +413,11 @@
 	.scatter-stack {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
+		gap: 3rem;
 	}
 
 	.scatter-panel {
-		display: block;
 		width: 100%;
-		background: none;
-		border: 2px solid transparent;
-		border-radius: 8px;
-		padding: 0.8rem 0.5rem;
-		cursor: pointer;
-		transition: border-color 0.3s ease, background-color 0.3s ease;
-		text-align: left;
-		font: inherit;
-	}
-
-	.scatter-panel:hover {
-		background-color: rgba(0, 0, 0, 0.01);
-	}
-
-	.scatter-panel.selected {
-		border-color: var(--border-light);
-		background-color: rgba(0, 0, 0, 0.015);
 	}
 
 	.panel-label {
@@ -469,7 +426,6 @@
 		font-weight: 400;
 		font-style: italic;
 		margin: 0 0 0.3rem;
-		padding-left: 0.5rem;
 	}
 
 	.panel-count {
@@ -480,13 +436,22 @@
 		color: var(--text-light);
 	}
 
-	.gauge-svg {
-		margin-top: 0.5rem;
+	/* ── Per-panel gauge ── */
+	.panel-gauge {
+		margin-top: 0.8rem;
 	}
 
-	/* ── Transitions ── */
-	.ci-line {
-		transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	.gauge-label {
+		font-family: var(--font-sans);
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		margin: 0 0 0.3rem;
+	}
+
+	.gauge-sublabel {
+		font-weight: 300;
+		color: var(--text-light);
 	}
 
 	/* ── SVG text ── */
@@ -518,20 +483,14 @@
 		fill: var(--text-muted);
 	}
 
-	:global(.pointer-val) {
-		font-family: var(--font-display);
-		font-size: 14px;
-		font-style: italic;
-	}
-
 	/* ── Interpretation text ── */
 	.interp-text {
 		font-family: var(--font-sans);
-		font-size: clamp(1.05rem, 2vw, 1.25rem);
+		font-size: clamp(1rem, 1.8vw, 1.15rem);
 		font-weight: 300;
 		line-height: 1.75;
 		color: var(--text-muted);
-		margin-top: 1.2rem;
+		margin-top: 0.5rem;
 		transition: color 0.3s ease;
 	}
 

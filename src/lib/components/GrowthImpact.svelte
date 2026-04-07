@@ -128,6 +128,10 @@
 	const COL_DEVELOPING = '#DD9D7C';
 	const COL_DEVELOPED  = '#567B57';
 
+	// Split dots by country
+	const devingDots = [...allDots.filter(d => d.country === 'developing'), ...namedDots.filter(d => d.country === 'developing')];
+	const devedDots  = [...allDots.filter(d => d.country === 'developed'),  ...namedDots.filter(d => d.country === 'developed')];
+
 	// Ticks
 	const Y_TICKS = [-0.4, -0.2, 0, 0.2, 0.4, 0.6];
 	const X_YEAR_TICKS = [1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010];
@@ -159,108 +163,95 @@
 			Where you look, and when, matters enormously.
 		</p>
 
-		<!-- ══ Scatterplot ══ -->
+		<!-- ══ Scatterplots (side by side) ══ -->
 		<div class="chart-block">
 			<p class="chart-label">
 				77 statistically significant estimates by publication year
 			</p>
-			<svg
-				viewBox="0 0 {W} {H_SCATTER}"
-				preserveAspectRatio="xMidYMid meet"
-				class="chart-svg"
-				aria-label="Scatterplot of significant PCC estimates by publication year"
-			>
-				<!-- Zone shading -->
-				<rect x={ML} y={MT} width={PW} height={yPcc(0) - MT}
-					fill="var(--region-americas)" opacity="0.03"/>
-				<rect x={ML} y={yPcc(0)} width={PW} height={MT + PH - yPcc(0)}
-					fill="var(--region-africa)" opacity="0.03"/>
+			<div class="scatter-pair">
+				{#each [
+					{ label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING },
+					{ label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED }
+				] as panel}
+					<div class="scatter-panel">
+						<p class="panel-label" style:color={panel.col}>{panel.label}</p>
+						<svg
+							viewBox="0 0 {W} {H_SCATTER}"
+							preserveAspectRatio="xMidYMid meet"
+							class="chart-svg"
+						>
+							<!-- Zone shading -->
+							<rect x={ML} y={MT} width={PW} height={yPcc(0) - MT}
+								fill="var(--region-americas)" opacity="0.03"/>
+							<rect x={ML} y={yPcc(0)} width={PW} height={MT + PH - yPcc(0)}
+								fill="var(--region-africa)" opacity="0.03"/>
 
-				<!-- Zero reference line -->
-				<line x1={ML} x2={W - MR} y1={yPcc(0)} y2={yPcc(0)}
-					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>
+							<!-- Zero reference line -->
+							<line x1={ML} x2={W - MR} y1={yPcc(0)} y2={yPcc(0)}
+								stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>
 
-				<!-- Zone labels -->
-				<text x={ML + 6} y={yPcc(0) - 8}
-					class="zone-label pos" text-anchor="start">Beneficial to growth</text>
-				<text x={ML + 6} y={yPcc(0) + 16}
-					class="zone-label neg" text-anchor="start">Harmful to growth</text>
+							<!-- Zone labels -->
+							<text x={ML + 6} y={yPcc(0) - 8}
+								class="zone-label pos" text-anchor="start">Beneficial to growth</text>
+							<text x={ML + 6} y={yPcc(0) + 16}
+								class="zone-label neg" text-anchor="start">Harmful to growth</text>
 
-				<!-- Grid lines (horizontal) -->
-				{#each Y_TICKS as t}
-					{#if t !== 0}
-						<line x1={ML} x2={W - MR} y1={yPcc(t)} y2={yPcc(t)}
-							stroke="var(--border-light)" stroke-width="0.5" opacity="0.5"/>
-					{/if}
+							<!-- Grid lines (horizontal) -->
+							{#each Y_TICKS as t}
+								{#if t !== 0}
+									<line x1={ML} x2={W - MR} y1={yPcc(t)} y2={yPcc(t)}
+										stroke="var(--border-light)" stroke-width="0.5" opacity="0.5"/>
+								{/if}
+							{/each}
+
+							<!-- Grid lines (vertical) -->
+							{#each X_YEAR_TICKS as yr}
+								<line x1={xYear(yr)} x2={xYear(yr)} y1={MT} y2={MT + PH}
+									stroke="var(--border-light)" stroke-width="0.5" opacity="0.3"/>
+							{/each}
+
+							<!-- Dots (uniform size, no labels) -->
+							{#each panel.dots as d}
+								<circle
+									cx={xYear(d.year)} cy={yPcc(d.pcc)}
+									r={4}
+									fill={panel.col}
+									opacity={0.6}
+									stroke="var(--bg)" stroke-width="0.8"
+								/>
+							{/each}
+
+							<!-- Y-axis -->
+							{#each Y_TICKS as t}
+								<line x1={ML - 4} x2={ML} y1={yPcc(t)} y2={yPcc(t)}
+									stroke="var(--text-muted)" stroke-width="1"/>
+								<text x={ML - 8} y={yPcc(t) + 4}
+									text-anchor="end" class="tick-label">{t.toFixed(1)}</text>
+							{/each}
+							<text
+								x={14} y={MT + PH / 2}
+								transform="rotate(-90, 14, {MT + PH / 2})"
+								text-anchor="middle" class="axis-title">
+								Partial correlation (PCC)
+							</text>
+
+							<!-- X-axis -->
+							<line x1={ML} x2={W - MR} y1={MT + PH} y2={MT + PH}
+								stroke="var(--border-light)" stroke-width="1"/>
+							{#each X_YEAR_TICKS as yr}
+								<line x1={xYear(yr)} x2={xYear(yr)} y1={MT + PH} y2={MT + PH + 6}
+									stroke="var(--text-muted)" stroke-width="1"/>
+								<text x={xYear(yr)} y={MT + PH + 20}
+									text-anchor="middle" class="tick-label">{yr}</text>
+							{/each}
+							<text x={ML + PW / 2} y={H_SCATTER - 5}
+								text-anchor="middle" class="axis-title">
+								Publication year
+							</text>
+						</svg>
+					</div>
 				{/each}
-
-				<!-- Grid lines (vertical) -->
-				{#each X_YEAR_TICKS as yr}
-					<line x1={xYear(yr)} x2={xYear(yr)} y1={MT} y2={MT + PH}
-						stroke="var(--border-light)" stroke-width="0.5" opacity="0.3"/>
-				{/each}
-
-				<!-- Simulated dots -->
-				{#each allDots as d}
-					<circle
-						cx={xYear(d.year)} cy={yPcc(d.pcc)}
-						r={4}
-						fill={d.country === 'developed' ? COL_DEVELOPED : COL_DEVELOPING}
-						opacity={0.55}
-						stroke="var(--bg)" stroke-width="0.8"
-					/>
-				{/each}
-
-				<!-- Named study dots (larger, labelled) -->
-				{#each namedDots as s}
-					{@const cx = xYear(s.year)}
-					{@const cy = yPcc(s.pcc)}
-					<circle
-						{cx} {cy}
-						r={6}
-						fill={s.country === 'developed' ? COL_DEVELOPED : COL_DEVELOPING}
-						opacity={0.9}
-						stroke="var(--bg)" stroke-width="1.5"
-					/>
-					<text x={cx + 9} y={cy + 4}
-						class="study-label"
-						fill="var(--text-muted)">{s.label}</text>
-				{/each}
-
-				<!-- Y-axis -->
-				{#each Y_TICKS as t}
-					<line x1={ML - 4} x2={ML} y1={yPcc(t)} y2={yPcc(t)}
-						stroke="var(--text-muted)" stroke-width="1"/>
-					<text x={ML - 8} y={yPcc(t) + 4}
-						text-anchor="end" class="tick-label">{t.toFixed(1)}</text>
-				{/each}
-				<text
-					x={14} y={MT + PH / 2}
-					transform="rotate(-90, 14, {MT + PH / 2})"
-					text-anchor="middle" class="axis-title">
-					Partial correlation (PCC)
-				</text>
-
-				<!-- X-axis -->
-				<line x1={ML} x2={W - MR} y1={MT + PH} y2={MT + PH}
-					stroke="var(--border-light)" stroke-width="1"/>
-				{#each X_YEAR_TICKS as yr}
-					<line x1={xYear(yr)} x2={xYear(yr)} y1={MT + PH} y2={MT + PH + 6}
-						stroke="var(--text-muted)" stroke-width="1"/>
-					<text x={xYear(yr)} y={MT + PH + 20}
-						text-anchor="middle" class="tick-label">{yr}</text>
-				{/each}
-				<text x={ML + PW / 2} y={H_SCATTER - 5}
-					text-anchor="middle" class="axis-title">
-					Publication year
-				</text>
-
-				<!-- Legend -->
-				<circle cx={W - MR - 160} cy={MT + 14} r={5} fill={COL_DEVELOPING} opacity="0.7"/>
-				<text x={W - MR - 150} y={MT + 18} class="legend-label">Developing countries</text>
-				<circle cx={W - MR - 160} cy={MT + 34} r={5} fill={COL_DEVELOPED} opacity="0.7"/>
-				<text x={W - MR - 150} y={MT + 38} class="legend-label">Developed countries</text>
-			</svg>
+			</div>
 		</div>
 
 		<!-- ══ Meta-regression estimate with CI ══ -->
@@ -421,6 +412,24 @@
 		display: block;
 	}
 
+	.scatter-pair {
+		display: flex;
+		gap: 1.5rem;
+	}
+
+	.scatter-panel {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.panel-label {
+		font-family: var(--font-display);
+		font-size: 1.3rem;
+		font-weight: 400;
+		font-style: italic;
+		margin: 0 0 0.3rem;
+	}
+
 	.gauge-svg {
 		margin-top: 0.5rem;
 	}
@@ -563,5 +572,6 @@
 		.growth-section { padding: 4rem 0 6rem; }
 		.filters { gap: 1.5rem; }
 		.section-title { font-size: 2rem; }
+		.scatter-pair { flex-direction: column; }
 	}
 </style>

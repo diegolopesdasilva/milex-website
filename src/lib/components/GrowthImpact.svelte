@@ -45,16 +45,40 @@
 	$effect(() => { tCtx.set(rawCtx); tCILo.set(ciLo); tCIHi.set(ciHi); });
 
 	// ── SVG layout (defined early so xs() is available for $derived) ──
-	const W = 800, H_SWARM = 248, H_GAUGE = 80;
-	const ML = 35, MR = 35, MT = 32, MB = 46;
+	const W = 800, H_BAR = 160, H_GAUGE = 80;
+	const ML = 35, MR = 35, MT = 52, MB = 46;
 	const PW = W - ML - MR;
-	const CY = MT + (H_SWARM - MT - MB) / 2 + 6;
 	const X_MIN = -0.8, X_MAX = 0.8;
 	function xs(v: number): number { return ML + ((v - X_MIN) / (X_MAX - X_MIN)) * PW; }
 	const TICKS = [-0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8];
-	const AX_S = H_SWARM - MB + 8;
+	const AX_B = H_BAR - MB + 8;   // x-axis y for bar chart
 	const AX_G = H_GAUGE - 20;
-	const GCY = 34; // gauge vertical centre for CI line
+	const GCY = 34;
+	const BAR_TOP = MT;
+	const BAR_BOT = AX_B;
+	const BAR_H = BAR_BOT - BAR_TOP;
+
+	// ── Density binning ──
+	const N_BINS = 80;
+	const BIN_W = (X_MAX - X_MIN) / N_BINS;
+
+	function binDots(vis: boolean[]): { center: number; count: number; neg: boolean }[] {
+		const bins: { center: number; count: number; neg: boolean }[] = [];
+		for (let b = 0; b < N_BINS; b++) {
+			const lo = X_MIN + b * BIN_W;
+			const hi = lo + BIN_W;
+			const center = lo + BIN_W / 2;
+			let count = 0;
+			for (let i = 0; i < allDots.length; i++) {
+				if (vis[i] && allDots[i].pcc >= lo && allDots[i].pcc < hi) count++;
+			}
+			if (count > 0) bins.push({ center, count, neg: center < 0 });
+		}
+		return bins;
+	}
+
+	let densityBins = $derived(binDots(dotVis));
+	let maxBinCount = $derived(Math.max(1, ...densityBins.map(b => b.count)));
 
 	// ── Derived gauge SVG values ──
 	let ptX    = $derived(xs($tCtx));
@@ -170,76 +194,77 @@
 			</div>
 		</div>
 
-		<!-- ══ Dot swarm ══ -->
+		<!-- ══ Density bar ══ -->
 		<div class="chart-block">
 			<p class="chart-label">
 				{visCount} of 77 statistically significant estimates shown
-				<span class="chart-sublabel">— vertical position is random jitter for readability; only horizontal position (PCC) carries meaning</span>
+				<span class="chart-sublabel">— colour intensity indicates overlapping estimates</span>
 			</p>
 			<svg
-				viewBox="0 0 {W} {H_SWARM}"
+				viewBox="0 0 {W} {H_BAR}"
 				preserveAspectRatio="xMidYMid meet"
 				class="chart-svg"
-				aria-label="Dot distribution of significant PCC estimates"
+				aria-label="Density bar of significant PCC estimates"
 			>
 				<!-- Zone shading -->
-				<rect x={ML} y={MT} width={xs(0) - ML} height={H_SWARM - MT - MB}
-					fill="var(--region-africa)" opacity="0.05"/>
-				<rect x={xs(0)} y={MT} width={W - MR - xs(0)} height={H_SWARM - MT - MB}
-					fill="var(--region-americas)" opacity="0.05"/>
+				<rect x={ML} y={BAR_TOP} width={xs(0) - ML} height={BAR_H}
+					fill="var(--region-africa)" opacity="0.04"/>
+				<rect x={xs(0)} y={BAR_TOP} width={W - MR - xs(0)} height={BAR_H}
+					fill="var(--region-americas)" opacity="0.04"/>
 
 				<!-- Zero reference -->
-				<line x1={xs(0)} x2={xs(0)} y1={MT} y2={AX_S}
+				<line x1={xs(0)} x2={xs(0)} y1={BAR_TOP} y2={AX_B}
 					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="5,3" opacity="0.55"/>
 
 				<!-- Zone labels -->
 				<text x={(ML + xs(0)) / 2} y={MT - 10}
-					text-anchor="middle" class="zone-label neg">← Harmful to growth</text>
+					text-anchor="middle" class="zone-label neg">&#8592; Harmful to growth</text>
 				<text x={(xs(0) + W - MR) / 2} y={MT - 10}
-					text-anchor="middle" class="zone-label pos">Beneficial to growth →</text>
+					text-anchor="middle" class="zone-label pos">Beneficial to growth &#8594;</text>
 
-				<!-- Simulated dots (filtered via opacity) -->
-				{#each allDots as d, i (i)}
-					<circle
-						cx={xs(d.pcc)} cy={CY + d.jy}
-						r={2.8}
-						fill={d.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
-						opacity={dotVis[i] ? 0.45 : 0.04}
-						class="dot"
+				<!-- Density slices -->
+				{#each densityBins as bin}
+					{@const sliceW = PW / N_BINS}
+					{@const x = xs(bin.center) - sliceW / 2}
+					{@const intensity = 0.15 + 0.75 * (bin.count / maxBinCount)}
+					<rect
+						{x} y={BAR_TOP} width={sliceW + 0.5} height={BAR_H}
+						fill={bin.neg ? 'var(--region-africa)' : 'var(--region-americas)'}
+						opacity={intensity}
+						class="density-slice"
 					/>
 				{/each}
 
-				<!-- Named study dots with labels (filtered) -->
+				<!-- Named study markers (tick marks + labels) -->
 				{#each named as s, si}
 					{@const vis = namedVis[si]}
 					{@const lx = xs(s.pcc)}
-					{@const ly = CY}
 					{@const col = s.pcc < 0 ? 'var(--region-africa)' : 'var(--region-americas)'}
-					{@const labelY = s.above ? ly - 28 : ly + 33}
-					{@const lineY1 = s.above ? ly - 7  : ly + 7}
-					{@const lineY2 = s.above ? ly - 20 : ly + 20}
-					<circle cx={lx} cy={ly} r={5.5}
-						fill={col} opacity={vis ? 0.92 : 0.06}
-						stroke="var(--bg)" stroke-width="1.8"
-						class="dot"/>
-					<line x1={lx} x2={lx} y1={lineY1} y2={lineY2}
-						stroke={col} stroke-width="1" opacity={vis ? 0.65 : 0.04}
-						class="dot"/>
+					{@const labelY = s.above ? BAR_TOP - 20 : AX_B + 28}
+					{@const tickTop = s.above ? BAR_TOP - 8 : AX_B}
+					{@const tickBot = s.above ? BAR_TOP : AX_B + 8}
+					<line x1={lx} x2={lx} y1={tickTop} y2={tickBot}
+						stroke={col} stroke-width="1.5" opacity={vis ? 0.8 : 0.06}
+						class="density-slice"/>
 					<text x={lx} y={labelY}
 						text-anchor="middle" class="study-label" fill={col}
 						opacity={vis ? 1 : 0.06}>{s.label}</text>
 				{/each}
 
+				<!-- Bar border -->
+				<rect x={ML} y={BAR_TOP} width={PW} height={BAR_H}
+					fill="none" stroke="var(--border-light)" stroke-width="0.5"/>
+
 				<!-- X-axis -->
-				<line x1={ML} x2={W - MR} y1={AX_S} y2={AX_S}
+				<line x1={ML} x2={W - MR} y1={AX_B} y2={AX_B}
 					stroke="var(--border-light)" stroke-width="1"/>
 				{#each TICKS as t}
-					<line x1={xs(t)} x2={xs(t)} y1={AX_S - 3} y2={AX_S + 6}
+					<line x1={xs(t)} x2={xs(t)} y1={AX_B - 3} y2={AX_B + 6}
 						stroke="var(--text-muted)" stroke-width="1"/>
-					<text x={xs(t)} y={AX_S + 18}
+					<text x={xs(t)} y={AX_B + 18}
 						text-anchor="middle" class="tick-label">{t.toFixed(1)}</text>
 				{/each}
-				<text x={ML + PW / 2} y={H_SWARM - 5}
+				<text x={ML + PW / 2} y={H_BAR - 5}
 					text-anchor="middle" class="axis-title">
 					Partial correlation coefficient (PCC)
 				</text>
@@ -434,8 +459,8 @@
 		margin-top: 0.5rem;
 	}
 
-	/* ── Dot transitions ── */
-	.dot {
+	/* ── Density bar transitions ── */
+	.density-slice {
 		transition: opacity 0.45s ease;
 	}
 

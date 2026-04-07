@@ -5,8 +5,6 @@
 	// ── Alptekin & Levine (2012) ──
 	// 32 studies · 169 estimates · 77 statistically significant
 	// RE pooled PCC = 0.066 [0.037, 0.095]
-	// No publication bias (FAT β₀ = 0.112, t = 0.43)
-	// Genuine effect (PET β₁ = 0.099, t = 3.48)
 	// Q(168) = 593.1 → high heterogeneity
 
 	const RE_MEAN = 0.066;
@@ -19,31 +17,8 @@
 	const MOD_PERIOD:  Record<Period, number>  = { '1950s': 0.253, '1960s–80s': 0, '1990s+': -0.226 };
 	const MOD_COUNTRY: Record<Country, number> = { developing: 0, developed: 0.185 };
 
-	// Approximate SEs
-	const SE_BASE = 0.015;
-	const SE_P: Record<Period, number>  = { '1950s': 0.115, '1960s–80s': 0, '1990s+': 0.103 };
-	const SE_C: Record<Country, number> = { developing: 0, developed: 0.062 };
-
-	// ── Filter state (for meta-regression gauge) ──
-	let periodFilter: Period  = $state('1960s–80s');
-	let countryFilter: Country = $state('developing');
-
-	// ── Contextual estimate + CI ──
-	let pMod   = $derived(MOD_PERIOD[periodFilter]);
-	let cMod   = $derived(MOD_COUNTRY[countryFilter]);
-	let rawCtx = $derived(RE_MEAN + pMod + cMod);
-	let ctxSE  = $derived(Math.sqrt(SE_BASE ** 2 + SE_P[periodFilter] ** 2 + SE_C[countryFilter] ** 2));
-	let ciLo   = $derived(rawCtx - 1.96 * ctxSE);
-	let ciHi   = $derived(rawCtx + 1.96 * ctxSE);
-
-	// ── Tweened values ──
-	const tCtx  = tweened(RE_MEAN, { duration: 500, easing: cubicOut });
-	const tCILo = tweened(RE_MEAN - 1.96 * SE_BASE, { duration: 500, easing: cubicOut });
-	const tCIHi = tweened(RE_MEAN + 1.96 * SE_BASE, { duration: 500, easing: cubicOut });
-	$effect(() => { tCtx.set(rawCtx); tCILo.set(ciLo); tCIHi.set(ciHi); });
-
 	// ── SVG layout ──
-	const W = 800, H_SCATTER = 340, H_GAUGE = 80;
+	const W = 800, H_SCATTER = 280, H_GAUGE = 80;
 	const ML = 60, MR = 30, MT = 20, MB = 50;
 	const PW = W - ML - MR;
 	const PH = H_SCATTER - MT - MB;
@@ -54,17 +29,12 @@
 	function xYear(yr: number): number { return ML + ((yr - X_YEAR_MIN) / (X_YEAR_MAX - X_YEAR_MIN)) * PW; }
 	function yPcc(pcc: number): number { return MT + PH - ((pcc - Y_MIN) / (Y_MAX - Y_MIN)) * PH; }
 
-	// PCC axis for gauge (same as before)
+	// PCC axis for gauge
 	const PCC_MIN = -0.8, PCC_MAX = 0.8;
 	function xsPcc(v: number): number { return ML + ((v - PCC_MIN) / (PCC_MAX - PCC_MIN)) * (W - ML - MR); }
-	const PCC_TICKS = [-0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8];
+	const PCC_TICKS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];
 	const AX_G = H_GAUGE - 20;
 	const GCY = 34;
-
-	let ptX    = $derived(xsPcc($tCtx));
-	let loX    = $derived(xsPcc($tCILo));
-	let hiX    = $derived(xsPcc($tCIHi));
-	let ptCol  = $derived($tCtx < 0 ? 'var(--region-africa)' : 'var(--region-americas)');
 
 	// ── Seeded RNG ──
 	function mulberry32(seed: number) {
@@ -115,37 +85,90 @@
 		}
 	}
 
-	// Named studies
-	const namedDots: (Dot & { label: string })[] = [
-		{ label: 'Benoit (1978)',        pcc:  0.383, year: 1978, period: '1950s',     country: 'developing' },
-		{ label: 'Deger & Smith (1983)', pcc:  0.131, year: 1983, period: '1960s–80s', country: 'developing' },
-		{ label: 'Looney (1989)',        pcc: -0.284, year: 1989, period: '1960s–80s', country: 'developing' },
-		{ label: 'Antonakis (1997)',     pcc: -0.456, year: 1997, period: '1990s+',    country: 'developing' },
-		{ label: 'Yakovlev (2007)',      pcc: -0.148, year: 2007, period: '1990s+',    country: 'developing' },
+	// Named studies (merged into allDots pool)
+	const namedStudies: Dot[] = [
+		{ pcc:  0.383, year: 1978, period: '1950s',     country: 'developing' },
+		{ pcc:  0.131, year: 1983, period: '1960s–80s', country: 'developing' },
+		{ pcc: -0.284, year: 1989, period: '1960s–80s', country: 'developing' },
+		{ pcc: -0.456, year: 1997, period: '1990s+',    country: 'developing' },
+		{ pcc: -0.148, year: 2007, period: '1990s+',    country: 'developing' },
 	];
+	allDots.push(...namedStudies);
 
 	// Colours
 	const COL_DEVELOPING = '#DD9D7C';
 	const COL_DEVELOPED  = '#567B57';
 
 	// Split dots by country
-	const devingDots = [...allDots.filter(d => d.country === 'developing'), ...namedDots.filter(d => d.country === 'developing')];
-	const devedDots  = [...allDots.filter(d => d.country === 'developed'),  ...namedDots.filter(d => d.country === 'developed')];
+	const devingDots = allDots.filter(d => d.country === 'developing');
+	const devedDots  = allDots.filter(d => d.country === 'developed');
+
+	// ── OLS trend line ──
+	function trendLine(dots: Dot[]): { slope: number; intercept: number } {
+		const n = dots.length;
+		if (n < 2) return { slope: 0, intercept: 0 };
+		let sx = 0, sy = 0, sxx = 0, sxy = 0;
+		for (const d of dots) {
+			sx += d.year; sy += d.pcc; sxx += d.year * d.year; sxy += d.year * d.pcc;
+		}
+		const denom = n * sxx - sx * sx;
+		if (Math.abs(denom) < 1e-10) return { slope: 0, intercept: sy / n };
+		const slope = (n * sxy - sx * sy) / denom;
+		const intercept = (sy - slope * sx) / n;
+		return { slope, intercept };
+	}
+
+	const trendDeveloping = trendLine(devingDots);
+	const trendDeveloped  = trendLine(devedDots);
 
 	// Ticks
 	const Y_TICKS = [-0.4, -0.2, 0, 0.2, 0.4, 0.6];
 	const X_YEAR_TICKS = [1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010];
 
-	// ── Button options ──
-	const periodOptions: Period[] = ['1950s', '1960s–80s', '1990s+'];
+	// ── Panel selection state → drives gauge ──
+	type PanelKey = 'developing' | 'developed';
+	let selectedPanel: PanelKey = $state('developing');
+
+	// Compute mean and SE from selected panel's dots
+	function meanAndSE(dots: Dot[]): { mean: number; se: number } {
+		const n = dots.length;
+		if (n === 0) return { mean: 0, se: 0 };
+		const m = dots.reduce((s, d) => s + d.pcc, 0) / n;
+		if (n === 1) return { mean: m, se: 0 };
+		const variance = dots.reduce((s, d) => s + (d.pcc - m) ** 2, 0) / (n - 1);
+		return { mean: m, se: Math.sqrt(variance / n) };
+	}
+
+	let selectedDots = $derived(selectedPanel === 'developing' ? devingDots : devedDots);
+	let stats = $derived(meanAndSE(selectedDots));
+	let gaugeMean = $derived(stats.mean);
+	let gaugeCILo = $derived(stats.mean - 1.96 * stats.se);
+	let gaugeCIHi = $derived(stats.mean + 1.96 * stats.se);
+
+	// Tweened gauge values
+	const tCtx  = tweened(RE_MEAN, { duration: 500, easing: cubicOut });
+	const tCILo = tweened(RE_MEAN - 0.03, { duration: 500, easing: cubicOut });
+	const tCIHi = tweened(RE_MEAN + 0.03, { duration: 500, easing: cubicOut });
+	$effect(() => { tCtx.set(gaugeMean); tCILo.set(gaugeCILo); tCIHi.set(gaugeCIHi); });
+
+	let ptX   = $derived(xsPcc($tCtx));
+	let loX   = $derived(xsPcc($tCILo));
+	let hiX   = $derived(xsPcc($tCIHi));
+	let ptCol = $derived(selectedPanel === 'developing' ? COL_DEVELOPING : COL_DEVELOPED);
 
 	// ── Interpretation ──
 	function interp(v: number): string {
-		if (v >  0.20) return 'Studies of this type tend to find a <b>clearly positive</b> association — higher military spending linked to faster growth.';
-		if (v >  0.05) return 'Studies of this type tend to find a <b>weakly positive</b> association — slightly higher growth with higher spending.';
-		if (v > -0.05) return 'Studies of this type tend to find <b>little or no effect</b> — the relationship is ambiguous.';
-		return 'Studies of this type tend to find a <b>negative</b> association — higher military spending linked to slower growth.';
+		if (v >  0.20) return 'These studies tend to find a <b>clearly positive</b> association — higher military spending linked to faster growth.';
+		if (v >  0.05) return 'These studies tend to find a <b>weakly positive</b> association — slightly higher growth with higher spending.';
+		if (v > -0.05) return 'These studies tend to find <b>little or no effect</b> — the relationship is ambiguous.';
+		return 'These studies tend to find a <b>negative</b> association — higher military spending linked to slower growth.';
 	}
+
+	// Panel data for template
+	const panels: { key: PanelKey; label: string; dots: Dot[]; col: string; trend: { slope: number; intercept: number } }[] = [
+		{ key: 'developing', label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING, trend: trendDeveloping },
+		{ key: 'developed',  label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED,  trend: trendDeveloped },
+	];
 </script>
 
 <section class="growth-section">
@@ -163,18 +186,23 @@
 			Where you look, and when, matters enormously.
 		</p>
 
-		<!-- ══ Scatterplots (side by side) ══ -->
+		<!-- ══ Scatterplots (stacked vertically) ══ -->
 		<div class="chart-block">
 			<p class="chart-label">
 				77 statistically significant estimates by publication year
+				<span class="chart-sublabel">— click a panel to update the summary below</span>
 			</p>
-			<div class="scatter-pair">
-				{#each [
-					{ label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING },
-					{ label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED }
-				] as panel}
-					<div class="scatter-panel">
-						<p class="panel-label" style:color={panel.col}>{panel.label}</p>
+			<div class="scatter-stack">
+				{#each panels as panel}
+					<button
+						class="scatter-panel"
+						class:selected={selectedPanel === panel.key}
+						onclick={() => selectedPanel = panel.key}
+					>
+						<p class="panel-label" style:color={panel.col}>
+							{panel.label}
+							<span class="panel-count">({panel.dots.length} estimates)</span>
+						</p>
 						<svg
 							viewBox="0 0 {W} {H_SCATTER}"
 							preserveAspectRatio="xMidYMid meet"
@@ -190,12 +218,6 @@
 							<line x1={ML} x2={W - MR} y1={yPcc(0)} y2={yPcc(0)}
 								stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>
 
-							<!-- Zone labels -->
-							<text x={ML + 6} y={yPcc(0) - 8}
-								class="zone-label pos" text-anchor="start">Beneficial to growth</text>
-							<text x={ML + 6} y={yPcc(0) + 16}
-								class="zone-label neg" text-anchor="start">Harmful to growth</text>
-
 							<!-- Grid lines (horizontal) -->
 							{#each Y_TICKS as t}
 								{#if t !== 0}
@@ -210,7 +232,15 @@
 									stroke="var(--border-light)" stroke-width="0.5" opacity="0.3"/>
 							{/each}
 
-							<!-- Dots (uniform size, no labels) -->
+							<!-- Trend line -->
+							<line
+								x1={xYear(X_YEAR_MIN)} y1={yPcc(panel.trend.slope * X_YEAR_MIN + panel.trend.intercept)}
+								x2={xYear(X_YEAR_MAX)} y2={yPcc(panel.trend.slope * X_YEAR_MAX + panel.trend.intercept)}
+								stroke={panel.col} stroke-width="2" opacity="0.5"
+								stroke-dasharray="6,4"
+							/>
+
+							<!-- Dots (uniform size) -->
 							{#each panel.dots as d}
 								<circle
 									cx={xYear(d.year)} cy={yPcc(d.pcc)}
@@ -248,46 +278,31 @@
 								text-anchor="middle" class="axis-title">
 								Publication year
 							</text>
+
+							<!-- Zero label -->
+							<text x={W - MR - 4} y={yPcc(0) - 6}
+								text-anchor="end" class="zero-label">PCC = 0</text>
 						</svg>
-					</div>
+					</button>
 				{/each}
 			</div>
 		</div>
 
-		<!-- ══ Meta-regression estimate with CI ══ -->
+		<!-- ══ Summary gauge (driven by panel selection) ══ -->
 		<div class="context-block">
-			<p class="chart-label">How does context shift the estimated effect?</p>
-			<p class="context-sub">
-				Use the buttons below to see how the meta-regression adjusted estimate shifts
-				with study characteristics (HLM coefficients from Table&thinsp;4).
+			<p class="chart-label">
+				Mean estimate with 95% confidence interval
+				<span class="chart-sublabel">
+					— {selectedPanel === 'developing' ? 'Developing' : 'Developed'} countries
+					({selectedDots.length} estimates, mean PCC = {gaugeMean.toFixed(3)})
+				</span>
 			</p>
-
-			<div class="filters">
-				<div class="filter-group">
-					<span class="filter-label">Time period of data</span>
-					<div class="btn-group">
-						{#each periodOptions as p}
-							<button class="tog" class:active={periodFilter === p}
-								onclick={() => periodFilter = p}>{p}</button>
-						{/each}
-					</div>
-				</div>
-				<div class="filter-group">
-					<span class="filter-label">Country sample</span>
-					<div class="btn-group">
-						<button class="tog" class:active={countryFilter === 'developing'}
-							onclick={() => countryFilter = 'developing'}>Developing</button>
-						<button class="tog" class:active={countryFilter === 'developed'}
-							onclick={() => countryFilter = 'developed'}>Developed</button>
-					</div>
-				</div>
-			</div>
 
 			<svg
 				viewBox="0 0 {W} {H_GAUGE}"
 				preserveAspectRatio="xMidYMid meet"
 				class="chart-svg gauge-svg"
-				aria-label="Meta-regression estimate with confidence interval"
+				aria-label="Mean PCC estimate with confidence interval"
 			>
 				<!-- Zone shading -->
 				<rect x={ML} y={4} width={xsPcc(0) - ML} height={H_GAUGE - 24}
@@ -328,8 +343,8 @@
 				</text>
 			</svg>
 
-			<p class="interp-text" class:neg={rawCtx < -0.05} class:neutral={rawCtx >= -0.05 && rawCtx <= 0.05}>
-				{@html interp(rawCtx)}
+			<p class="interp-text" class:neg={gaugeMean < -0.05} class:neutral={gaugeMean >= -0.05 && gaugeMean <= 0.05}>
+				{@html interp(gaugeMean)}
 			</p>
 		</div>
 
@@ -339,7 +354,7 @@
 			77 are statistically significant (26 negative, 51 positive). Dot positions are simulated from
 			group-specific distributions shifted by the HLM meta-regression moderator coefficients
 			(Table&thinsp;4): period dummies (1950s: +0.253; 1990s+: −0.226) and developed-country dummy (+0.185).
-			Publication years are approximate within each period.
+			Publication years are approximate within each period. The trend line is a simple OLS fit.
 			No publication bias detected (FAT: β₀ = 0.112, t = 0.43, p &gt; 0.05).
 			A genuine effect was confirmed (PET: β₁ = 0.099, t = 3.48, p &lt; 0.01).
 		</p>
@@ -397,6 +412,13 @@
 		margin: 0 0 0.5rem;
 	}
 
+	.chart-sublabel {
+		font-weight: 300;
+		text-transform: none;
+		letter-spacing: 0;
+		color: var(--text-light);
+	}
+
 	.context-sub {
 		font-family: var(--font-sans);
 		font-size: 0.92rem;
@@ -412,77 +434,54 @@
 		display: block;
 	}
 
-	.scatter-pair {
+	/* ── Scatter panels (stacked) ── */
+	.scatter-stack {
 		display: flex;
+		flex-direction: column;
 		gap: 1.5rem;
 	}
 
 	.scatter-panel {
-		flex: 1;
-		min-width: 0;
+		display: block;
+		width: 100%;
+		background: none;
+		border: 2px solid transparent;
+		border-radius: 8px;
+		padding: 0.8rem 0.5rem;
+		cursor: pointer;
+		transition: border-color 0.3s ease, background-color 0.3s ease;
+		text-align: left;
+		font: inherit;
+	}
+
+	.scatter-panel:hover {
+		background-color: rgba(0, 0, 0, 0.01);
+	}
+
+	.scatter-panel.selected {
+		border-color: var(--border-light);
+		background-color: rgba(0, 0, 0, 0.015);
 	}
 
 	.panel-label {
 		font-family: var(--font-display);
-		font-size: 1.3rem;
+		font-size: 1.4rem;
 		font-weight: 400;
 		font-style: italic;
 		margin: 0 0 0.3rem;
+		padding-left: 0.5rem;
+	}
+
+	.panel-count {
+		font-family: var(--font-sans);
+		font-size: 0.85rem;
+		font-weight: 300;
+		font-style: normal;
+		color: var(--text-light);
 	}
 
 	.gauge-svg {
 		margin-top: 0.5rem;
-	}
-
-	/* ── Filters ── */
-	.filters {
-		display: flex;
-		gap: 3rem;
-		flex-wrap: wrap;
-		margin-bottom: 0.5rem;
-	}
-
-	.filter-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-	}
-
-	.filter-label {
-		font-family: var(--font-sans);
-		font-size: 0.88rem;
-		font-weight: 400;
-		color: var(--text-muted);
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-	}
-
-	.btn-group {
-		display: flex;
-		gap: 0;
-	}
-
-	.tog {
-		font-family: var(--font-sans);
-		font-size: 0.9rem;
-		font-weight: 400;
-		color: var(--text-muted);
-		background: none;
-		border: 1px solid var(--border-light);
-		padding: 0.35rem 0.9rem;
-		cursor: pointer;
-		transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
-		margin-left: -1px;
-	}
-
-	.tog:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
-	.tog:last-child  { border-radius: 0 4px 4px 0; }
-
-	.tog.active {
-		background: var(--text);
-		color: var(--bg);
-		border-color: var(--text);
-		z-index: 1;
 	}
 
 	/* ── Transitions ── */
@@ -500,17 +499,11 @@
 	:global(.zone-label.neg) { fill: var(--region-africa); }
 	:global(.zone-label.pos) { fill: var(--region-americas); }
 
-	:global(.study-label) {
+	:global(.zero-label) {
 		font-family: var(--font-sans);
-		font-size: 10.5px;
+		font-size: 10px;
 		font-weight: 400;
-	}
-
-	:global(.legend-label) {
-		font-family: var(--font-sans);
-		font-size: 11px;
-		font-weight: 400;
-		fill: var(--text-muted);
+		fill: var(--text-light);
 	}
 
 	:global(.tick-label) {
@@ -570,8 +563,6 @@
 	/* ── Responsive ── */
 	@media (max-width: 768px) {
 		.growth-section { padding: 4rem 0 6rem; }
-		.filters { gap: 1.5rem; }
 		.section-title { font-size: 2rem; }
-		.scatter-pair { flex-direction: column; }
 	}
 </style>

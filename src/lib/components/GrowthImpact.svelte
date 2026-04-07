@@ -11,8 +11,8 @@
 	const MOD_COUNTRY: Record<Country, number> = { developing: 0, developed: 0.185 };
 
 	// ── SVG layout ──
-	const W = 800, H_SCATTER = 360, H_GAUGE = 70;
-	const ML = 60, MR = 30, MT = 20, MB = 50;
+	const W = 840, H_SCATTER = 360;
+	const ML = 60, MR = 70, MT = 20, MB = 50;
 	const PW = W - ML - MR;
 	const PH = H_SCATTER - MT - MB;
 
@@ -24,11 +24,8 @@
 	function invXYear(px: number): number { return X_YEAR_MIN + ((px - ML) / PW) * (X_YEAR_MAX - X_YEAR_MIN); }
 	function invYPcc(py: number): number { return Y_MIN + ((MT + PH - py) / PH) * (Y_MAX - Y_MIN); }
 
-	const PCC_MIN = -0.6, PCC_MAX = 0.6;
-	function xsPcc(v: number): number { return ML + ((v - PCC_MIN) / (PCC_MAX - PCC_MIN)) * PW; }
-	const PCC_TICKS = [-0.4, -0.2, 0, 0.2, 0.4];
-	const AX_G = H_GAUGE - 18;
-	const GCY = 30;
+	// Floating CI dot position (right of plot area)
+	const CI_X = W - MR + 25; // center x of floating dot
 
 	// ── Seeded RNG ──
 	function mulberry32(seed: number) {
@@ -228,13 +225,6 @@
 	const Y_TICKS = [-0.4, -0.2, 0, 0.2, 0.4, 0.6];
 	const X_YEAR_TICKS = [1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010];
 
-	function interp(v: number): string {
-		if (v >  0.20) return 'These studies tend to find a <b>clearly positive</b> association — higher military spending linked to faster growth.';
-		if (v >  0.05) return 'These studies tend to find a <b>weakly positive</b> association — slightly higher growth with higher spending.';
-		if (v > -0.05) return 'These studies tend to find <b>little or no effect</b> — the relationship is ambiguous.';
-		return 'These studies tend to find a <b>negative</b> association — higher military spending linked to slower growth.';
-	}
-
 	const panelData = [
 		{ key: 'developing' as const, label: 'Developing countries', dots: devingDots, col: COL_DEVELOPING, trend: trendDeveloping, ciBand: ciBandDeveloping },
 		{ key: 'developed' as const,  label: 'Developed countries',  dots: devedDots,  col: COL_DEVELOPED,  trend: trendDeveloped,  ciBand: ciBandDeveloped },
@@ -371,70 +361,48 @@
 							<!-- Zero label -->
 							<text x={W - MR - 4} y={yPcc(0) - 6}
 								text-anchor="end" class="zero-label">PCC = 0</text>
+
+							<!-- ── Floating mean dot + CI whisker (right side) ── -->
+							<!-- Vertical CI whisker -->
+							<line
+								x1={CI_X} x2={CI_X}
+								y1={yPcc(stats.mean + 1.96 * stats.se)}
+								y2={yPcc(stats.mean - 1.96 * stats.se)}
+								stroke={panel.col} stroke-width="2" stroke-linecap="round"
+								opacity="0.7" class="ci-anim"/>
+							<!-- End caps -->
+							<line
+								x1={CI_X - 5} x2={CI_X + 5}
+								y1={yPcc(stats.mean + 1.96 * stats.se)}
+								y2={yPcc(stats.mean + 1.96 * stats.se)}
+								stroke={panel.col} stroke-width="1.5" opacity="0.7" class="ci-anim"/>
+							<line
+								x1={CI_X - 5} x2={CI_X + 5}
+								y1={yPcc(stats.mean - 1.96 * stats.se)}
+								y2={yPcc(stats.mean - 1.96 * stats.se)}
+								stroke={panel.col} stroke-width="1.5" opacity="0.7" class="ci-anim"/>
+							<!-- Mean dot -->
+							<circle cx={CI_X} cy={yPcc(stats.mean)} r={6}
+								fill={panel.col} opacity="0.9" class="ci-anim"/>
+							<!-- Value label -->
+							<text x={CI_X} y={yPcc(stats.mean) - 12}
+								text-anchor="middle" class="ci-val" fill={panel.col}>
+								{stats.mean.toFixed(3)}
+							</text>
+							<!-- "mean" label -->
+							<text x={CI_X} y={MT + PH + 20}
+								text-anchor="middle" class="ci-axis-label">mean</text>
 						</svg>
 
-						<!-- Gauge for this panel -->
-						<div class="panel-gauge">
-							<p class="gauge-label">
-								{#if hasSel}
-									Selection: {selDots.length} of {panel.dots.length} estimates, mean PCC = {stats.mean.toFixed(3)}
-									<button class="clear-btn" onclick={() => clearSelection(panel.key)}>Clear</button>
-								{:else}
-									All {panel.dots.length} estimates, mean PCC = {stats.mean.toFixed(3)}
-								{/if}
-								<span class="gauge-sublabel">
-									(95% CI: {(stats.mean - 1.96 * stats.se).toFixed(3)} to {(stats.mean + 1.96 * stats.se).toFixed(3)})
-								</span>
-							</p>
-							<svg
-								viewBox="0 0 {W} {H_GAUGE}"
-								preserveAspectRatio="xMidYMid meet"
-								class="chart-svg"
-							>
-								<!-- Zone shading -->
-								<rect x={ML} y={4} width={xsPcc(0) - ML} height={H_GAUGE - 22}
-									fill="var(--region-africa)" opacity="0.04"/>
-								<rect x={xsPcc(0)} y={4} width={W - MR - xsPcc(0)} height={H_GAUGE - 22}
-									fill="var(--region-americas)" opacity="0.04"/>
-
-								<!-- Zero reference -->
-								<line x1={xsPcc(0)} x2={xsPcc(0)} y1={4} y2={AX_G}
-									stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>
-
-								<!-- Axis -->
-								<line x1={ML} x2={W - MR} y1={AX_G} y2={AX_G}
-									stroke="var(--border-light)" stroke-width="1"/>
-								{#each PCC_TICKS as t}
-									<line x1={xsPcc(t)} x2={xsPcc(t)} y1={AX_G - 3} y2={AX_G + 5}
-										stroke="var(--border-light)" stroke-width="1"/>
-									<text x={xsPcc(t)} y={AX_G + 16}
-										text-anchor="middle" class="tick-label">{t.toFixed(1)}</text>
-								{/each}
-
-								<!-- CI whisker -->
-								<line
-									x1={xsPcc(stats.mean - 1.96 * stats.se)}
-									x2={xsPcc(stats.mean + 1.96 * stats.se)}
-									y1={GCY} y2={GCY}
-									stroke={panel.col} stroke-width="2.5" stroke-linecap="round"/>
-								<line
-									x1={xsPcc(stats.mean - 1.96 * stats.se)}
-									x2={xsPcc(stats.mean - 1.96 * stats.se)}
-									y1={GCY - 6} y2={GCY + 6}
-									stroke={panel.col} stroke-width="1.5"/>
-								<line
-									x1={xsPcc(stats.mean + 1.96 * stats.se)}
-									x2={xsPcc(stats.mean + 1.96 * stats.se)}
-									y1={GCY - 6} y2={GCY + 6}
-									stroke={panel.col} stroke-width="1.5"/>
-								<circle
-									cx={xsPcc(stats.mean)} cy={GCY}
-									r={5} fill={panel.col}/>
-							</svg>
-							<p class="interp-text" class:neg={stats.mean < -0.05} class:neutral={stats.mean >= -0.05 && stats.mean <= 0.05}>
-								{@html interp(stats.mean)}
-							</p>
-						</div>
+						<!-- Selection info text -->
+						<p class="sel-info">
+							{#if hasSel}
+								Selection: {selDots.length} of {panel.dots.length} estimates
+								<button class="clear-btn" onclick={() => clearSelection(panel.key)}>Clear</button>
+							{:else}
+								{panel.dots.length} estimates — drag to select
+							{/if}
+						</p>
 					</div>
 				{/each}
 			</div>
@@ -547,21 +515,12 @@
 		color: var(--text-light);
 	}
 
-	.panel-gauge {
-		margin-top: 0.8rem;
-	}
-
-	.gauge-label {
+	.sel-info {
 		font-family: var(--font-sans);
-		font-size: 0.9rem;
-		font-weight: 500;
-		color: var(--text-muted);
-		margin: 0 0 0.3rem;
-	}
-
-	.gauge-sublabel {
+		font-size: 0.85rem;
 		font-weight: 300;
 		color: var(--text-light);
+		margin: 0.3rem 0 0;
 	}
 
 	.clear-btn {
@@ -593,6 +552,24 @@
 	:global(.zone-label.neg) { fill: var(--region-africa); }
 	:global(.zone-label.pos) { fill: var(--region-americas); }
 
+	:global(.ci-anim) {
+		transition: all 0.4s ease;
+	}
+
+	:global(.ci-val) {
+		font-family: var(--font-display);
+		font-size: 13px;
+		font-style: italic;
+		font-weight: 400;
+		transition: all 0.4s ease;
+	}
+
+	:global(.ci-axis-label) {
+		font-family: var(--font-sans);
+		font-size: 10px;
+		fill: var(--text-light);
+	}
+
 	:global(.zero-label) {
 		font-family: var(--font-sans);
 		font-size: 10px;
@@ -612,23 +589,6 @@
 		fill: var(--text-muted);
 	}
 
-	.interp-text {
-		font-family: var(--font-sans);
-		font-size: clamp(1rem, 1.8vw, 1.15rem);
-		font-weight: 300;
-		line-height: 1.75;
-		color: var(--text-muted);
-		margin-top: 0.5rem;
-		transition: color 0.3s ease;
-	}
-
-	.interp-text.neg     { color: var(--region-africa); }
-	.interp-text.neutral { color: var(--text-muted); }
-
-	.interp-text :global(b) {
-		font-weight: 600;
-		color: inherit;
-	}
 
 	.methodology-note {
 		font-family: var(--font-sans);

@@ -87,14 +87,6 @@ export const events: HistoricalEvent[] = [
 			'World military expenditure in 2017 was $1,739 billion \u2014 the highest since the Cold War, 9.8 per cent above 2008. Central Europe had the largest subregional percentage increase (+12 per cent), driven by the perceived Russian threat.'
 	},
 	{
-		year: 2019,
-		title: 'Record High',
-		description:
-			'World military spending reached $1,917 billion \u2014 the highest level since SIPRI began estimating \u2014 with the largest annual increase of the decade.',
-		context:
-			'Spending rose 3.6 per cent in 2019, the fifth consecutive annual increase, with all regions contributing. India overtook Russia to become the third-largest spender for the first time, at $71.1 billion. Germany recorded the biggest percentage increase among the top 15 spenders, up 10 per cent.'
-	},
-	{
 		year: 2020,
 		title: 'COVID-19 Pandemic',
 		description:

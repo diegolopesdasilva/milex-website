@@ -3,6 +3,7 @@
 	import Hero from '$lib/components/Hero.svelte';
 	import StackedAreaChart from '$lib/components/StackedAreaChart.svelte';
 	import Legend from '$lib/components/Legend.svelte';
+	import GrowthImpact from '$lib/components/GrowthImpact.svelte';
 	import WaffleReallocation from '$lib/components/WaffleReallocation.svelte';
 
 	import { events as globalEvents } from '$lib/data/events';
@@ -463,6 +464,15 @@
 		<p class="ending-text">{currentEnding.text1}</p>
 		<p class="ending-text" style="margin-top: 1.5rem;">{currentEnding.text2}</p>
 	</section>
+
+	<!-- Defence Dividend section -->
+	<div
+		style:width="{streamTailWidth > 0 ? streamTailWidth + 'px' : '60%'}"
+		style:margin-left="{streamTailLeft > 0 ? streamTailLeft + 'px' : 'auto'}"
+		style:margin-right="{streamTailLeft > 0 ? 'auto' : 'auto'}"
+	>
+		<GrowthImpact />
+	</div>
 
 	<!-- Reallocation thought exercise -->
 	<div

@@ -508,6 +508,71 @@
 
 	<footer>
 		<p>Data: SIPRI Military Expenditure Database. All figures in constant 2023 USD.</p>
+
+		<div class="acknowledgement">
+			<p>
+				The data used to build this visualization is available thanks to the hard and attentive work
+				of dozens and dozens of researchers that have worked at <span class="sipri">SIPRI</span> over the years.
+				The Military Expenditure chapter in the SIPRI Yearbook is a valuable source not only to data
+				visualization pages like this one, but also to policymakers, historians, scholars, journalists,
+				citizens and pretty much anyone interested in understanding how much money goes to the military.
+				The data is freely available to anyone and you can access it
+				<a href="https://www.sipri.org/databases/milex" target="_blank" rel="noopener">here</a>.
+			</p>
+			<p>
+				A special thanks to all of those that have authored <span class="sipri">SIPRI</span> Military Expenditure chapters over the years.
+				The following list is incomplete and I apologize for the omissions; these are the authors
+				from 1992–2025 of the military expenditure chapters of the Yearbook. There are still those
+				that preceded us. For those who will succeed us, I thank you in advance.
+			</p>
+			<p class="authors-list">
+				Elisabeth Sk&ouml;ns,
+				Evamaria Loose-Weintraub,
+				Petter St&aring;lenheim,
+				Paul George,
+				Bengt-G&ouml;ran Bergstrand,
+				Sam Perlo-Freeman,
+				Wuyi Omitoogun,
+				Olawale Ismail,
+				Catalina Perdomo,
+				Carina Solmirano,
+				Agn&egrave;s Courades Allebeck,
+				Reinhilde Weidacher,
+				Noel Kelly,
+				Julian Cooper,
+				Nan Tian,
+				Diego Lopes da Silva,
+				Lucie B&eacute;raud-Sudreau,
+				Xiao Liang,
+				Lorenzo Scarazzato,
+				Alexandra Marksteiner,
+				Aude Fleurant,
+				Pieter D. Wezeman,
+				Siemon T. Wezeman,
+				Alexandra Kuimova,
+				Hel&eacute;n Wilandh,
+				Damien Fruchart,
+				Nicole Ball,
+				Steven M. Kosiak,
+				David Shambaugh,
+				Robert Bedeski,
+				Shaoguang Wang,
+				Ana Carolina de Oliveira Assis,
+				Lara Maria G. G. Costa,
+				Noah Heinemann,
+				Jan Grebe,
+				Wael Abdul-Shafi,
+				Christina Buchhold,
+				Susan Clark,
+				Erik Whitlock,
+				Neil Ferguson,
+				Zubaida A. Karim,
+				Jade Guiberteau Ricard,
+				Florian Erdle,
+				Kateryna Kuzmuk
+			</p>
+		</div>
+
 		<p class="closing">
 			Did you enjoy this visualization? If so, consider making a donation to the Red Cross,
 			Doctors Without Borders, or to <span class="sipri">SIPRI</span>. I won't leave any links here for security reasons,
@@ -802,6 +867,41 @@
 		font-size: 1.05rem;
 		font-weight: 300;
 		line-height: 1.8;
+		color: var(--text-light);
+	}
+
+	footer .acknowledgement {
+		max-width: 650px;
+		margin: 2rem auto 0;
+	}
+
+	footer .acknowledgement p {
+		font-size: 0.95rem;
+		font-weight: 300;
+		line-height: 1.75;
+		color: var(--text-light);
+		margin: 0 0 1rem;
+	}
+
+	footer .acknowledgement a {
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		transition: color 0.2s ease;
+	}
+
+	footer .acknowledgement a:hover {
+		color: var(--text);
+	}
+
+	footer .acknowledgement :global(.sipri) {
+		font-family: var(--font-display);
+		font-weight: 400;
+		color: #E2003F;
+	}
+
+	footer .authors-list {
+		font-style: italic;
 		color: var(--text-light);
 	}
 

@@ -320,7 +320,7 @@
 		font-weight: 400;
 		font-style: italic;
 		color: var(--text);
-		text-align: right;
+		text-align: left;
 		margin: 0 0 var(--space-lg);
 	}
 

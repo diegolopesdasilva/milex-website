@@ -448,7 +448,7 @@
 		font-weight: 400;
 		font-style: italic;
 		color: var(--text);
-		text-align: right;
+		text-align: left;
 		margin-bottom: 2.5rem;
 		line-height: 1.2;
 	}

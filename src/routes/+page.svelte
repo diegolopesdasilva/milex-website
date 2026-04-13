@@ -340,6 +340,26 @@
 <main>
 	<Hero />
 
+	<section class="intro-text">
+		<p>
+			While military expenditure is primarily intended to fund the armed forces and secure
+			sovereignty, it has effects that extend far beyond a country's national security. It is
+			known to affect economic growth, development, income inequality and political institutions,
+			among many others. One of the most serious and complex impacts of military expenditure is
+			on international stability. As a country increases its military expenditure, others may
+			perceive it as a threat and respond in kind, which may prompt the first country to
+			counter-respond with further increases — setting off a spiral or traditional security
+			dilemma. This predicament can lead to increasingly higher military expenditure at the
+			expense of investment in other areas, but with the paradoxical result of more insecurity,
+			not less as initially intended.
+		</p>
+		<p>
+			Given its far-reaching impacts on international security and development, SIPRI has been
+			tracking military expenditure for nearly six decades. Below, the data tells a visual
+			history from the end of the cold war, through the peace dividend years, up to now.
+		</p>
+	</section>
+
 	<section class="legend-bar">
 		<Legend {activeRegion} onRegionClick={(r) => { activeRegion = r; }} />
 	</section>
@@ -466,6 +486,23 @@
 	main {
 		max-width: 100%;
 		overflow-x: hidden;
+	}
+
+	/* ── Intro text ── */
+	.intro-text {
+		max-width: 900px;
+		margin: 0 auto var(--space-xl);
+		padding: 0 var(--space-lg);
+	}
+
+	.intro-text p {
+		font-family: var(--font-sans);
+		font-size: clamp(1.1rem, 2vw, 1.4rem);
+		font-weight: 300;
+		line-height: 1.85;
+		color: var(--text-muted);
+		text-align: justify;
+		margin: 0 0 1.2rem;
 	}
 
 	/* ── Legend bar ── */

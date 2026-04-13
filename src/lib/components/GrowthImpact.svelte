@@ -235,7 +235,9 @@
 	<div class="growth-content">
 		<h2 class="section-title">Is There Such a Thing as a "Defence Dividend"?</h2>
 		<p class="section-intro">
-			Prime Minister Starmer said in 2025 that "there is a lot of talk about the end of the
+			United Kingdom Prime Minister Keir Starmer
+			<a href="https://www.gov.uk/government/speeches/prime-ministers-remarks-at-the-london-defence-conference-8-may-2025" class="source-link" target="_blank" rel="noopener">said in 2025</a>
+			that "there is a lot of talk about the end of the
 			peace dividend: our task now is to seize the defence dividend, felt directly in the pockets
 			of working people, creating the jobs of the future." His remark echoes a longstanding argument
 			that military expenditures contribute to economic growth.
@@ -465,6 +467,17 @@
 
 	.section-intro strong {
 		font-weight: 600;
+		color: var(--text);
+	}
+
+	.section-intro :global(.source-link) {
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		transition: color 0.2s ease;
+	}
+
+	.section-intro :global(.source-link:hover) {
 		color: var(--text);
 	}
 

@@ -10,16 +10,16 @@
 	const impacts = {
 		health: {
 			label: 'Health',
-			perBillion: 200_000,
+			perBillion: 200_000,       // ~$5,000 per life saved (midpoint of GiveWell's $3,500–5,500 range)
 			unit: 'lives saved',
 			unitSingular: 'life saved',
-			description: 'Via malaria prevention, vaccines and maternal care',
+			description: 'Via malaria nets, vaccines and maternal care',
 			source: 'GiveWell, 2024',
 			color: '#567B57'
 		},
 		education: {
 			label: 'Education',
-			perBillion: 2_190_000,
+			perBillion: 18_180_000,    // ~$55 per child per year in low-income countries
 			unit: 'children schooled for a year',
 			unitSingular: 'child schooled for a year',
 			description: 'Primary and secondary education in low-income countries',
@@ -28,11 +28,11 @@
 		},
 		climate: {
 			label: 'Climate Mitigation',
-			perBillion: 20_000_000,
+			perBillion: 10_000_000,    // ~$100 per ton CO₂ — IPCC threshold at which emissions can be halved
 			unit: 'tons CO\u2082 abated',
 			unitSingular: 'ton CO\u2082 abated',
-			description: 'Cost-effective emissions reduction and renewable energy',
-			source: 'IPCC AR6, 2023',
+			description: 'Emissions reduction via renewables, efficiency and land use',
+			source: 'IPCC AR6 WG3, 2022',
 			color: '#EEC7A3'
 		}
 	};
@@ -311,9 +311,9 @@
 	<div class="sources-note">
 		<p>
 			Impact estimates based on:
-			<a href="https://www.givewell.org/charities/top-charities" target="_blank" rel="noopener"><em>GiveWell</em></a> (2024) for health interventions (~$5,000 per life saved via malaria prevention);
-			<a href="https://www.worldbank.org/en/topic/education/publication/education-finance-watch" target="_blank" rel="noopener"><em>World Bank Education Finance Watch</em></a> (2024) for education (~$456 per child per year in low-income countries);
-			<a href="https://www.ipcc.ch/report/ar6/wg3/" target="_blank" rel="noopener"><em>IPCC AR6</em></a> (2023) for climate mitigation (~$50 per ton CO&#8322; for cost-effective abatement).
+			<a href="https://www.givewell.org/impact-estimates" target="_blank" rel="noopener"><em>GiveWell</em></a> (2024) for health interventions (~$3,500–5,500 per life saved across top charities, midpoint ~$5,000);
+			<a href="https://www.worldbank.org/en/topic/education/publication/education-finance-watch" target="_blank" rel="noopener"><em>World Bank Education Finance Watch</em></a> (2024) for education (~$55 per child per year in low-income countries);
+			<a href="https://www.ipcc.ch/report/ar6/wg3/" target="_blank" rel="noopener"><em>IPCC AR6 WG3</em></a> (2022), Figure SPM.7, for climate mitigation (options below ~$100 per ton CO&#8322; can halve global emissions by 2030).
 			These are approximate figures intended for illustration.
 		</p>
 	</div>

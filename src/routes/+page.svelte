@@ -797,11 +797,11 @@
 	}
 
 	footer .closing {
-		max-width: 600px;
-		margin: 2rem auto 0;
-		font-size: 0.85rem;
+		max-width: 650px;
+		margin: 2.5rem auto 0;
+		font-size: 1.05rem;
 		font-weight: 300;
-		line-height: 1.7;
+		line-height: 1.8;
 		color: var(--text-light);
 	}
 

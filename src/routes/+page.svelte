@@ -508,7 +508,8 @@
 	}
 
 	.intro-text :global(.sipri) {
-		font-weight: 700;
+		font-family: var(--font-display);
+		font-weight: 400;
 		color: #E2003F;
 	}
 

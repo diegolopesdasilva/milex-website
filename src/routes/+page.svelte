@@ -117,6 +117,29 @@
 	let bracketLeft = $state(0);
 	let bracketWidth = $state(0);
 
+	// ── Intro stream-taper dimensions ──
+	// Stream width at 1992 as a fraction of the chart plot area
+	const allTotals = data.map((row: any) => regions.reduce((s: number, r: string) => s + (row[r] || 0), 0));
+	const total1992 = allTotals[0];
+	const maxTotal = Math.max(...allTotals);
+	const STREAM_FRAC_1992 = total1992 / (maxTotal * 1.5); // fraction of plotW that the stream occupies at 1992
+
+	let introW = $state(0); // measured via bind:clientWidth
+
+	// The ruler takes 90px (20px margin + 70px width). The chart-column is the rest.
+	// LayerCake uses 20px padding on each side inside the chart-column.
+	// Stream center relative to page = 90 + chartColW/2
+	// Stream width at 1992 = STREAM_FRAC_1992 * (chartColW - 40)
+	let taperStreamW = $derived(introW > 0 ? STREAM_FRAC_1992 * (introW - 90 - 40) : 300);
+	let taperStreamCenter = $derived(introW > 0 ? 90 + (introW - 90) / 2 : introW / 2);
+	let taperStreamLeft = $derived(taperStreamCenter - taperStreamW / 2);
+	let taperStreamRight = $derived(taperStreamCenter + taperStreamW / 2);
+
+	// Float widths at top (narrow → text is wide) and bottom (wide → text matches stream)
+	const TAPER_TOP_PAD = 40; // px padding at top of text on each side
+	let taperLeftW = $derived(Math.max(TAPER_TOP_PAD, taperStreamLeft)); // left float max width = bottom left edge
+	let taperRightW = $derived(Math.max(TAPER_TOP_PAD, introW - taperStreamRight)); // right float max width
+
 	// Current "active" year based on scroll position (NOT reactive — updated via DOM)
 	let activeYear = firstYear;
 
@@ -340,8 +363,22 @@
 <main>
 	<Hero />
 
-	<section class="intro-text">
-		<p>
+	<section class="intro-stream" bind:clientWidth={introW}>
+		<!-- Left taper float -->
+		<div
+			class="taper-float taper-left"
+			style:width="{taperLeftW}px"
+			style:shape-outside="polygon(0 0, {TAPER_TOP_PAD}px 0, 100% 100%, 0 100%)"
+			style:clip-path="polygon(0 0, {TAPER_TOP_PAD}px 0, 100% 100%, 0 100%)"
+		></div>
+		<!-- Right taper float -->
+		<div
+			class="taper-float taper-right"
+			style:width="{taperRightW}px"
+			style:shape-outside="polygon({taperRightW - TAPER_TOP_PAD}px 0, 100% 0, 100% 100%, 0 100%)"
+			style:clip-path="polygon({taperRightW - TAPER_TOP_PAD}px 0, 100% 0, 100% 100%, 0 100%)"
+		></div>
+		<p class="intro-p">
 			While military expenditure is primarily intended to fund the armed forces and secure
 			sovereignty, it has effects that extend far beyond a country's national security. It is
 			known to affect economic growth, development, income inequality and political institutions,
@@ -353,7 +390,7 @@
 			expense of investment in other areas, but with the paradoxical result of more insecurity,
 			not less as initially intended.
 		</p>
-		<p>
+		<p class="intro-p">
 			Given its far-reaching impacts on international security and development, the
 			Stockholm International Peace Research Institute (<span class="sipri">SIPRI</span>)
 			has been tracking military expenditure for nearly six decades. Below, the data tells
@@ -494,25 +531,28 @@
 		overflow-x: hidden;
 	}
 
-	/* ── Intro text — centered over the chart column ──
-	   The chart column starts at 90px (20px ruler margin + 70px ruler).
-	   Shift the centering axis rightward by half of 90px = 45px so
-	   the text block visually sits over the streamgraph center. */
-	.intro-text {
-		max-width: 700px;
-		margin: 0 auto var(--space-lg);
-		padding: 0 var(--space-lg);
-		/* Shift center to match chart-column center */
-		transform: translateX(45px);
+	/* ── Intro stream-tapered text ── */
+	.intro-stream {
+		position: relative;
+		margin: 0 0 0;
+		padding: 0;
+		overflow: hidden;
 	}
 
-	.intro-text :global(.sipri) {
-		font-family: var(--font-display);
-		font-weight: 400;
-		color: #E2003F;
+	.taper-float {
+		height: 800px;
+		background: transparent;
 	}
 
-	.intro-text p {
+	.taper-left {
+		float: left;
+	}
+
+	.taper-right {
+		float: right;
+	}
+
+	.intro-p {
 		font-family: var(--font-sans);
 		font-size: clamp(1.1rem, 2vw, 1.4rem);
 		font-weight: 300;
@@ -520,6 +560,12 @@
 		color: var(--text-muted);
 		text-align: justify;
 		margin: 0 0 1.2rem;
+	}
+
+	.intro-stream :global(.sipri) {
+		font-family: var(--font-display);
+		font-weight: 400;
+		color: #E2003F;
 	}
 
 	.scroll-hint {
@@ -533,7 +579,8 @@
 		font-weight: 400;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		margin-top: var(--space-lg);
+		margin-top: var(--space-md);
+		margin-bottom: var(--space-sm);
 		animation: drift 2.5s ease infinite;
 	}
 

@@ -445,16 +445,16 @@
 		style:margin-right="{streamTailLeft > 0 ? 'auto' : 'auto'}"
 		style:margin-top="3rem"
 	>
-		<WaffleReallocation />
+		<GrowthImpact />
 	</div>
 
-	<!-- Growth impact interactive section -->
+	<!-- Reallocation thought exercise -->
 	<div
 		style:width="{streamTailWidth > 0 ? streamTailWidth + 'px' : '60%'}"
 		style:margin-left="{streamTailLeft > 0 ? streamTailLeft + 'px' : 'auto'}"
 		style:margin-right="{streamTailLeft > 0 ? 'auto' : 'auto'}"
 	>
-		<GrowthImpact />
+		<WaffleReallocation />
 	</div>
 
 	<footer>

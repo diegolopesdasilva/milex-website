@@ -180,13 +180,23 @@
 </script>
 
 <section class="reallocation-section">
-	<h2 class="section-title">What If?</h2>
+	<h2 class="section-title">A Better Target</h2>
 	<p class="section-intro">
-		Global military expenditure reached $2,718 billion in 2024. What if just 3.5 per cent
-		— <span class="savings-figure">${SAVINGS_B.toFixed(0)} billion</span> — were redirected?
-		Each square below represents a fraction of global military spending.
-		The <span class="highlight-swatch"></span> highlighted squares represent 3.5 per cent of the total.
-		Drag them into the boxes on the right to explore what that money could achieve.
+		In 2025, NATO countries agreed to increase their baseline military expenditures target
+		from 2 to 5 per cent of their GDP — of which, 3.5 would be dedicated to core defence activities.
+	</p>
+	<p class="section-intro">
+		As a thought exercise, what could 3.5 per cent of world military expenditures do if allocated
+		to other sectors instead? The idea is not new. From the 1970s onward, the UN General Assembly
+		considered a series of proposals to freeze or reduce military budgets — including a 1973 call
+		for a 10 per cent cut in P5 spending and a 1979 consensus resolution on freezing and reducing
+		military budgets — none of which produced binding agreements.
+	</p>
+	<p class="section-intro">
+		Each <span class="highlight-swatch"></span> highlighted square below represents a share of the
+		<span class="savings-figure">${SAVINGS_B.toFixed(0)} billion</span> that 3.5 per cent of global
+		military spending would amount to. Drag them into the boxes on the right to explore what that
+		money could achieve.
 	</p>
 
 	<div class="interactive-area">

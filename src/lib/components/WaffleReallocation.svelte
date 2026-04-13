@@ -1,10 +1,10 @@
 <script lang="ts">
-	// 600 total squares, 12 = 2% savings
+	// 600 total squares, 21 = 3.5% savings
 	const TOTAL_SQUARES = 600;
 	const COLS = 24;
-	const SAVINGS_SQUARES = 12;
+	const SAVINGS_SQUARES = 21;
 	const TOTAL_MILEX_B = 2718;
-	const SAVINGS_B = TOTAL_MILEX_B * 0.02; // 54.36B
+	const SAVINGS_B = TOTAL_MILEX_B * 0.035; // ~95.1B
 	const PER_SQUARE_B = SAVINGS_B / SAVINGS_SQUARES; // ~4.53B per savings square
 
 	const impacts = {
@@ -182,10 +182,10 @@
 <section class="reallocation-section">
 	<h2 class="section-title">What If?</h2>
 	<p class="section-intro">
-		Global military expenditure reached $2,718 billion in 2024. What if just 2 per cent
+		Global military expenditure reached $2,718 billion in 2024. What if just 3.5 per cent
 		— <span class="savings-figure">${SAVINGS_B.toFixed(0)} billion</span> — were redirected?
 		Each square below represents a fraction of global military spending.
-		The <span class="highlight-swatch"></span> highlighted squares represent 2 per cent of the total.
+		The <span class="highlight-swatch"></span> highlighted squares represent 3.5 per cent of the total.
 		Drag them into the boxes on the right to explore what that money could achieve.
 	</p>
 
@@ -320,7 +320,7 @@
 		font-weight: 400;
 		font-style: italic;
 		color: var(--text);
-		text-align: center;
+		text-align: right;
 		margin: 0 0 var(--space-lg);
 	}
 

@@ -11,8 +11,8 @@
 	const MOD_COUNTRY: Record<Country, number> = { developing: 0, developed: 0.185 };
 
 	// ── SVG layout ──
-	const W = 840, H_SCATTER = 360;
-	const ML = 60, MR = 70, MT = 20, MB = 50;
+	const W = 890, H_SCATTER = 360;
+	const ML = 60, MR = 120, MT = 20, MB = 50;
 	const PW = W - ML - MR;
 	const PH = H_SCATTER - MT - MB;
 
@@ -437,7 +437,7 @@
 		font-weight: 400;
 		font-style: italic;
 		color: var(--text);
-		text-align: center;
+		text-align: right;
 		margin-bottom: 2.5rem;
 		line-height: 1.2;
 	}

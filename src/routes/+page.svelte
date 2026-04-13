@@ -522,6 +522,12 @@
 
 	<footer>
 		<p>Data: SIPRI Military Expenditure Database. All figures in constant 2023 USD.</p>
+		<p class="closing">
+			Did you enjoy this visualization? If so, consider making a donation to the Red Cross,
+			Doctors Without Borders, or to <span class="sipri">SIPRI</span>. I won't leave any links here for security reasons,
+			but you can easily find information online. If you do, I would love to hear from you
+			at diego.lopes@sipri.org.
+		</p>
 	</footer>
 </main>
 
@@ -536,11 +542,10 @@
 		position: relative;
 		margin: 0 0 0;
 		padding: 0;
-		overflow: hidden;
 	}
 
 	.taper-float {
-		height: 800px;
+		height: 500px;
 		background: transparent;
 	}
 
@@ -579,8 +584,8 @@
 		font-weight: 400;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		margin-top: var(--space-md);
-		margin-bottom: var(--space-sm);
+		margin-top: 0.5rem;
+		margin-bottom: 0;
 		animation: drift 2.5s ease infinite;
 	}
 
@@ -816,6 +821,21 @@
 		font-family: var(--font-sans);
 		font-weight: 400;
 		letter-spacing: 0.02em;
+	}
+
+	footer .closing {
+		max-width: 600px;
+		margin: 2rem auto 0;
+		font-size: 0.85rem;
+		font-weight: 300;
+		line-height: 1.7;
+		color: var(--text-light);
+	}
+
+	footer .closing :global(.sipri) {
+		font-family: var(--font-display);
+		font-weight: 400;
+		color: #E2003F;
 	}
 
 	/* ── Responsive ── */

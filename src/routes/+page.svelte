@@ -494,11 +494,11 @@
 		overflow-x: hidden;
 	}
 
-	/* ── Intro text ── */
+	/* ── Intro text — aligned with chart column ── */
 	.intro-text {
-		max-width: 750px;
-		margin: 0 auto var(--space-lg);
-		padding: 0 var(--space-lg);
+		/* 20px left-column margin + 70px ruler = 90px offset to match chart-column left edge */
+		margin: 0 0 var(--space-lg);
+		padding: 0 20px 0 90px;
 	}
 
 	.intro-text p {
@@ -509,6 +509,7 @@
 		color: var(--text-muted);
 		text-align: justify;
 		margin: 0 0 1.2rem;
+		max-width: 700px;
 	}
 
 	.scroll-hint {

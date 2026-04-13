@@ -1,54 +1,61 @@
 <script lang="ts">
 	// ── Alptekin & Levine (2012), Table 1 ──
-	// Real study-level average PCCs from the paper
+	// Real study-level average PCCs
+	// Country classification: 'developing' includes LDC-focused and mixed/cross-country samples;
+	// 'developed' = studies focused on OECD, NATO, US, or industrial economies.
+	type CountryType = 'developing' | 'developed';
+
 	interface Study {
 		label: string;
-		year: number;       // publication year
-		n: number;          // number of estimates within the study
-		pcc: number;        // average effect size (partial correlation)
+		year: number;
+		n: number;
+		pcc: number;
+		country: CountryType;
 	}
 
 	const studies: Study[] = [
-		{ label: 'Benoit (1978)',                      year: 1978, n:  3, pcc:  0.383 },
-		{ label: 'Deger & Smith (1983)',               year: 1983, n:  5, pcc:  0.131 },
-		{ label: 'Lim (1983)',                         year: 1983, n:  9, pcc:  0.078 },
-		{ label: 'Deger & Sen (1983)',                 year: 1983, n:  1, pcc:  0.146 },
-		{ label: 'Faini et al. (1984)',                year: 1984, n:  1, pcc: -0.120 },
-		{ label: 'Cappelen et al. (1984)',             year: 1984, n:  8, pcc:  0.079 },
-		{ label: 'Landau (1986)',                      year: 1986, n: 12, pcc:  0.060 },
-		{ label: 'Biswas & Ram (1986)',                year: 1986, n:  6, pcc:  0.198 },
-		{ label: 'Deger (1986)',                       year: 1986, n:  5, pcc:  0.330 },
-		{ label: 'Lebovic & Ishaq (1987)',             year: 1987, n:  4, pcc: -0.129 },
-		{ label: 'Chan (1988)',                        year: 1988, n:  3, pcc:  0.089 },
-		{ label: 'Grobar & Porter (1989)',             year: 1989, n:  5, pcc:  0.128 },
-		{ label: 'Gyimah-Brempong (1989)',             year: 1989, n:  2, pcc:  0.038 },
-		{ label: 'Looney (1989)',                      year: 1989, n:  2, pcc: -0.284 },
-		{ label: 'Landau (1993)',                      year: 1993, n: 29, pcc:  0.173 },
-		{ label: 'Dunne & Mohammed (1995)',            year: 1995, n:  3, pcc:  0.006 },
-		{ label: 'Lipow & Antinori (1995)',            year: 1995, n:  2, pcc:  0.192 },
-		{ label: 'Blomberg (1996)',                    year: 1996, n:  1, pcc: -0.042 },
-		{ label: 'Knight et al. (1996)',               year: 1996, n:  4, pcc: -0.100 },
-		{ label: 'Landau (1996)',                      year: 1996, n: 11, pcc:  0.285 },
-		{ label: 'Brumm (1997)',                       year: 1997, n:  2, pcc:  0.316 },
-		{ label: 'Antonakis (1997)',                   year: 1997, n:  2, pcc: -0.456 },
-		{ label: 'Heo & DeRouen (1998)',               year: 1998, n:  5, pcc: -0.101 },
-		{ label: 'DeRouen (2000)',                     year: 2000, n:  1, pcc:  0.168 },
-		{ label: 'Stroup & Heckelman (2001)',          year: 2001, n:  5, pcc:  0.202 },
-		{ label: 'Galvin (2003)',                      year: 2003, n:  9, pcc: -0.156 },
-		{ label: 'Aizenman & Glick (2006)',            year: 2006, n:  7, pcc: -0.205 },
-		{ label: 'Bose et al. (2007)',                 year: 2007, n:  4, pcc:  0.278 },
-		{ label: 'Kalaitzidakis & Tzouvelekas (2007)', year: 2007, n:  3, pcc:  0.095 },
-		{ label: 'Kollias et al. (2007)',              year: 2007, n:  2, pcc:  0.156 },
-		{ label: 'Yakovlev (2007)',                    year: 2007, n: 10, pcc: -0.148 },
-		{ label: 'Looney & McNab (2008)',              year: 2008, n:  3, pcc: -0.129 },
+		{ label: 'Benoit (1978)',                       year: 1978, n:  3, pcc:  0.383, country: 'developing' },
+		{ label: 'Deger & Smith (1983)',                year: 1983, n:  5, pcc:  0.131, country: 'developing' },
+		{ label: 'Lim (1983)',                          year: 1983, n:  9, pcc:  0.078, country: 'developing' },
+		{ label: 'Deger & Sen (1983)',                  year: 1983, n:  1, pcc:  0.146, country: 'developing' },
+		{ label: 'Faini et al. (1984)',                 year: 1984, n:  1, pcc: -0.120, country: 'developing' },
+		{ label: 'Cappelen et al. (1984)',              year: 1984, n:  8, pcc:  0.079, country: 'developed' },
+		{ label: 'Landau (1986)',                       year: 1986, n: 12, pcc:  0.060, country: 'developing' },
+		{ label: 'Biswas & Ram (1986)',                 year: 1986, n:  6, pcc:  0.198, country: 'developing' },
+		{ label: 'Deger (1986)',                        year: 1986, n:  5, pcc:  0.330, country: 'developing' },
+		{ label: 'Lebovic & Ishaq (1987)',              year: 1987, n:  4, pcc: -0.129, country: 'developing' },
+		{ label: 'Chan (1988)',                         year: 1988, n:  3, pcc:  0.089, country: 'developing' },
+		{ label: 'Grobar & Porter (1989)',              year: 1989, n:  5, pcc:  0.128, country: 'developing' },
+		{ label: 'Gyimah-Brempong (1989)',              year: 1989, n:  2, pcc:  0.038, country: 'developing' },
+		{ label: 'Looney (1989)',                       year: 1989, n:  2, pcc: -0.284, country: 'developing' },
+		{ label: 'Landau (1993)',                       year: 1993, n: 29, pcc:  0.173, country: 'developing' },
+		{ label: 'Dunne & Mohammed (1995)',             year: 1995, n:  3, pcc:  0.006, country: 'developing' },
+		{ label: 'Lipow & Antinori (1995)',             year: 1995, n:  2, pcc:  0.192, country: 'developed' },
+		{ label: 'Blomberg (1996)',                     year: 1996, n:  1, pcc: -0.042, country: 'developing' },
+		{ label: 'Knight et al. (1996)',                year: 1996, n:  4, pcc: -0.100, country: 'developing' },
+		{ label: 'Landau (1996)',                       year: 1996, n: 11, pcc:  0.285, country: 'developing' },
+		{ label: 'Brumm (1997)',                        year: 1997, n:  2, pcc:  0.316, country: 'developed' },
+		{ label: 'Antonakis (1997)',                    year: 1997, n:  2, pcc: -0.456, country: 'developing' },
+		{ label: 'Heo & DeRouen (1998)',                year: 1998, n:  5, pcc: -0.101, country: 'developed' },
+		{ label: 'DeRouen (2000)',                      year: 2000, n:  1, pcc:  0.168, country: 'developed' },
+		{ label: 'Stroup & Heckelman (2001)',           year: 2001, n:  5, pcc:  0.202, country: 'developing' },
+		{ label: 'Galvin (2003)',                       year: 2003, n:  9, pcc: -0.156, country: 'developing' },
+		{ label: 'Aizenman & Glick (2006)',             year: 2006, n:  7, pcc: -0.205, country: 'developing' },
+		{ label: 'Bose et al. (2007)',                  year: 2007, n:  4, pcc:  0.278, country: 'developing' },
+		{ label: 'Kalaitzidakis & Tzouvelekas (2007)', year: 2007, n:  3, pcc:  0.095, country: 'developed' },
+		{ label: 'Kollias et al. (2007)',               year: 2007, n:  2, pcc:  0.156, country: 'developed' },
+		{ label: 'Yakovlev (2007)',                     year: 2007, n: 10, pcc: -0.148, country: 'developing' },
+		{ label: 'Looney & McNab (2008)',               year: 2008, n:  3, pcc: -0.129, country: 'developing' },
 	];
 
-	// Pooled estimates
-	const FE_MEAN = 0.056;
-	const RE_MEAN = 0.066;
+	const devingStudies = studies.filter(s => s.country === 'developing');
+	const devedStudies  = studies.filter(s => s.country === 'developed');
+
+	const COL_DEVELOPING = '#DD9D7C';
+	const COL_DEVELOPED  = '#567B57';
 
 	// ── SVG layout ──
-	const W = 890, H_SCATTER = 400;
+	const W = 890, H_SCATTER = 380;
 	const ML = 60, MR = 80, MT = 20, MB = 55;
 	const PW = W - ML - MR;
 	const PH = H_SCATTER - MT - MB;
@@ -58,11 +65,10 @@
 	function xYear(yr: number): number { return ML + ((yr - X_YEAR_MIN) / (X_YEAR_MAX - X_YEAR_MIN)) * PW; }
 	function yPcc(pcc: number): number { return MT + PH - ((pcc - Y_MIN) / (Y_MAX - Y_MIN)) * PH; }
 
-	// Floating CI dot position
 	const CI_X = W - MR + 25;
 
-	// ── OLS trend line ──
-	function computeTrend(pts: { x: number; y: number }[]): { slope: number; intercept: number; predict: (x: number) => number; ciHalf: (x: number) => number } {
+	// ── OLS trend line with CI band ──
+	function computeTrend(pts: { x: number; y: number }[]) {
 		const n = pts.length;
 		let sx = 0, sy = 0, sxx = 0, sxy = 0;
 		for (const p of pts) { sx += p.x; sy += p.y; sxx += p.x * p.x; sxy += p.x * p.y; }
@@ -81,81 +87,94 @@
 		};
 	}
 
-	const trend = computeTrend(studies.map(s => ({ x: s.year, y: s.pcc })));
-
-	// CI band path
-	function ciBandPath(): string {
+	function makeBand(trend: ReturnType<typeof computeTrend>): string {
 		const years: number[] = [];
-		for (let yr = X_YEAR_MIN; yr <= X_YEAR_MAX; yr += 1) years.push(yr);
+		for (let yr = X_YEAR_MIN; yr <= X_YEAR_MAX; yr++) years.push(yr);
 		const upper = years.map(yr => `${xYear(yr).toFixed(1)},${yPcc(trend.predict(yr) + trend.ciHalf(yr)).toFixed(1)}`);
 		const lower = [...years].reverse().map(yr => `${xYear(yr).toFixed(1)},${yPcc(trend.predict(yr) - trend.ciHalf(yr)).toFixed(1)}`);
 		return `M${upper.join(' L')} L${lower.join(' L')} Z`;
 	}
-	const ciBand = ciBandPath();
 
-	// ── Mean + CI of all studies ──
-	const allMean = studies.reduce((s, d) => s + d.pcc, 0) / studies.length;
-	const allVar = studies.reduce((s, d) => s + (d.pcc - allMean) ** 2, 0) / (studies.length - 1);
-	const allSE = Math.sqrt(allVar / studies.length);
+	const trendDeving = computeTrend(devingStudies.map(s => ({ x: s.year, y: s.pcc })));
+	const trendDeved  = computeTrend(devedStudies.map(s => ({ x: s.year, y: s.pcc })));
+	const bandDeving = makeBand(trendDeving);
+	const bandDeved  = makeBand(trendDeved);
 
-	// ── Selection state ──
-	let sel: { x0: number; y0: number; x1: number; y1: number } | null = $state(null);
-	let dragging = $state(false);
-
-	function getSvgPoint(e: MouseEvent, svg: SVGSVGElement): { x: number; y: number } {
-		const pt = svg.createSVGPoint();
-		pt.x = e.clientX; pt.y = e.clientY;
-		const svgPt = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-		return { x: svgPt.x, y: svgPt.y };
+	// ── Mean + CI ──
+	function meanAndSE(dots: Study[]) {
+		const n = dots.length;
+		if (n === 0) return { mean: 0, se: 0 };
+		const m = dots.reduce((s, d) => s + d.pcc, 0) / n;
+		if (n === 1) return { mean: m, se: 0 };
+		const v = dots.reduce((s, d) => s + (d.pcc - m) ** 2, 0) / (n - 1);
+		return { mean: m, se: Math.sqrt(v / n) };
 	}
 
-	function onMouseDown(e: MouseEvent) {
+	// ── Selection state per panel ──
+	let selDeving: { x0: number; y0: number; x1: number; y1: number } | null = $state(null);
+	let selDeved:  { x0: number; y0: number; x1: number; y1: number } | null = $state(null);
+	let draggingPanel: 'developing' | 'developed' | null = $state(null);
+
+	function getSvgPoint(e: MouseEvent, svg: SVGSVGElement) {
+		const pt = svg.createSVGPoint();
+		pt.x = e.clientX; pt.y = e.clientY;
+		return pt.matrixTransform(svg.getScreenCTM()!.inverse());
+	}
+
+	function onDown(e: MouseEvent, panel: 'developing' | 'developed') {
 		const svg = e.currentTarget as SVGSVGElement;
 		const pt = getSvgPoint(e, svg);
 		if (pt.x < ML || pt.x > W - MR || pt.y < MT || pt.y > MT + PH) return;
-		dragging = true;
-		sel = { x0: pt.x, y0: pt.y, x1: pt.x, y1: pt.y };
+		draggingPanel = panel;
+		const s = { x0: pt.x, y0: pt.y, x1: pt.x, y1: pt.y };
+		if (panel === 'developing') selDeving = s; else selDeved = s;
 	}
 
-	function onMouseMove(e: MouseEvent) {
-		if (!dragging || !sel) return;
+	function onMove(e: MouseEvent) {
+		if (!draggingPanel) return;
 		const svg = e.currentTarget as SVGSVGElement;
 		const pt = getSvgPoint(e, svg);
-		sel = { ...sel,
-			x1: Math.max(ML, Math.min(W - MR, pt.x)),
-			y1: Math.max(MT, Math.min(MT + PH, pt.y))
-		};
+		const cx = Math.max(ML, Math.min(W - MR, pt.x));
+		const cy = Math.max(MT, Math.min(MT + PH, pt.y));
+		if (draggingPanel === 'developing' && selDeving) selDeving = { ...selDeving, x1: cx, y1: cy };
+		else if (draggingPanel === 'developed' && selDeved) selDeved = { ...selDeved, x1: cx, y1: cy };
 	}
 
-	function onMouseUp() { dragging = false; }
+	function onUp() { draggingPanel = null; }
 
-	function inSel(s: Study): boolean {
-		if (!sel || !selActive) return false;
+	function inBox(s: Study, box: { x0: number; y0: number; x1: number; y1: number } | null): boolean {
+		if (!box) return false;
 		const sx = xYear(s.year), sy = yPcc(s.pcc);
-		const xMin = Math.min(sel.x0, sel.x1), xMax = Math.max(sel.x0, sel.x1);
-		const yMin = Math.min(sel.y0, sel.y1), yMax = Math.max(sel.y0, sel.y1);
-		return sx >= xMin && sx <= xMax && sy >= yMin && sy <= yMax;
+		return sx >= Math.min(box.x0, box.x1) && sx <= Math.max(box.x0, box.x1)
+			&& sy >= Math.min(box.y0, box.y1) && sy <= Math.max(box.y0, box.y1);
 	}
 
-	let selActive = $derived(sel !== null && Math.abs(sel.x1 - sel.x0) > 5 && Math.abs(sel.y1 - sel.y0) > 5);
-	let selectedStudies = $derived(selActive ? studies.filter(s => inSel(s)) : studies);
-	let selMean = $derived(selectedStudies.length > 0 ? selectedStudies.reduce((a, s) => a + s.pcc, 0) / selectedStudies.length : 0);
-	let selSE = $derived(selectedStudies.length > 1
-		? Math.sqrt(selectedStudies.reduce((a, s) => a + (s.pcc - selMean) ** 2, 0) / (selectedStudies.length - 1) / selectedStudies.length)
-		: 0);
+	function isActive(box: { x0: number; y0: number; x1: number; y1: number } | null): boolean {
+		return box !== null && Math.abs(box.x1 - box.x0) > 5 && Math.abs(box.y1 - box.y0) > 5;
+	}
 
-	function clearSel() { sel = null; }
+	function boxRect(b: { x0: number; y0: number; x1: number; y1: number }) {
+		return { x: Math.min(b.x0, b.x1), y: Math.min(b.y0, b.y1), width: Math.abs(b.x1 - b.x0), height: Math.abs(b.y1 - b.y0) };
+	}
 
-	function selRect(s: { x0: number; y0: number; x1: number; y1: number }) {
-		return { x: Math.min(s.x0, s.x1), y: Math.min(s.y0, s.y1), width: Math.abs(s.x1 - s.x0), height: Math.abs(s.y1 - s.y0) };
+	let selDevingActive = $derived(isActive(selDeving));
+	let selDevedActive  = $derived(isActive(selDeved));
+	let selDevingStudies = $derived(selDevingActive ? devingStudies.filter(s => inBox(s, selDeving)) : devingStudies);
+	let selDevedStudies  = $derived(selDevedActive  ? devedStudies.filter(s => inBox(s, selDeved))   : devedStudies);
+	let statsDeving = $derived(meanAndSE(selDevingStudies));
+	let statsDeved  = $derived(meanAndSE(selDevedStudies));
+
+	function clearSel(panel: 'developing' | 'developed') {
+		if (panel === 'developing') selDeving = null; else selDeved = null;
 	}
 
 	const Y_TICKS = [-0.4, -0.2, 0, 0.2, 0.4];
 	const X_YEAR_TICKS = [1978, 1983, 1988, 1993, 1998, 2003, 2008];
 
-	// Dot radius scaled by number of estimates (sqrt scale)
-	const MAX_N = Math.max(...studies.map(s => s.n));
-	function dotR(n: number): number { return 3 + 5 * Math.sqrt(n / MAX_N); }
+	const panels = [
+		{ key: 'developed' as const,  label: 'Developed countries',  dots: devedStudies,  col: COL_DEVELOPED,  trend: trendDeved,  band: bandDeved },
+		{ key: 'developing' as const, label: 'Developing countries', dots: devingStudies, col: COL_DEVELOPING, trend: trendDeving, band: bandDeving },
+	];
 </script>
 
 <section class="growth-section">
@@ -177,7 +196,7 @@
 			negative effect of military expenditures on economic growth.
 		</p>
 		<p class="section-intro">
-			The figure below plots the average effect size from each of the 32 studies in Alptekin &amp;
+			The two figures below plot the average effect size from each of the 32 studies in Alptekin &amp;
 			Levine's (2012) meta-analysis. The trend is quite clear, as the strength and signal of the
 			effect weaken and change over time.
 		</p>
@@ -188,160 +207,160 @@
 
 		<div class="chart-block">
 			<p class="chart-label">
-				Average effect size (PCC) by publication year, 32 studies
-				<span class="chart-sublabel">— dot size reflects the number of estimates within each study; drag to select</span>
+				Average effect size (PCC) by publication year
+				<span class="chart-sublabel">— drag to select studies and compute their mean</span>
 			</p>
+			<div class="scatter-stack">
+				{#each panels as panel}
+					{@const sel = panel.key === 'developing' ? selDeving : selDeved}
+					{@const active = panel.key === 'developing' ? selDevingActive : selDevedActive}
+					{@const stats = panel.key === 'developing' ? statsDeving : statsDeved}
+					{@const selStudies = panel.key === 'developing' ? selDevingStudies : selDevedStudies}
+					<div class="scatter-panel">
+						<p class="panel-label" style:color={panel.col}>
+							{panel.label}
+							<span class="panel-count">({panel.dots.length} studies)</span>
+						</p>
 
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<svg
-				viewBox="0 0 {W} {H_SCATTER}"
-				preserveAspectRatio="xMidYMid meet"
-				class="chart-svg scatter-svg"
-				onmousedown={onMouseDown}
-				onmousemove={onMouseMove}
-				onmouseup={onMouseUp}
-				onmouseleave={onMouseUp}
-			>
-				<!-- Zone shading -->
-				<rect x={ML} y={MT} width={PW} height={yPcc(0) - MT}
-					fill="var(--region-americas)" opacity="0.03"/>
-				<rect x={ML} y={yPcc(0)} width={PW} height={MT + PH - yPcc(0)}
-					fill="var(--region-africa)" opacity="0.03"/>
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<svg
+							viewBox="0 0 {W} {H_SCATTER}"
+							preserveAspectRatio="xMidYMid meet"
+							class="chart-svg scatter-svg"
+							onmousedown={(e) => onDown(e, panel.key)}
+							onmousemove={onMove}
+							onmouseup={onUp}
+							onmouseleave={onUp}
+						>
+							<!-- Zone shading -->
+							<rect x={ML} y={MT} width={PW} height={yPcc(0) - MT}
+								fill="var(--region-americas)" opacity="0.03"/>
+							<rect x={ML} y={yPcc(0)} width={PW} height={MT + PH - yPcc(0)}
+								fill="var(--region-africa)" opacity="0.03"/>
 
-				<!-- Zero reference line -->
-				<line x1={ML} x2={W - MR} y1={yPcc(0)} y2={yPcc(0)}
-					stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>
+							<!-- Zero line -->
+							<line x1={ML} x2={W - MR} y1={yPcc(0)} y2={yPcc(0)}
+								stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>
 
-				<!-- Grid lines (horizontal) -->
-				{#each Y_TICKS as t}
-					{#if t !== 0}
-						<line x1={ML} x2={W - MR} y1={yPcc(t)} y2={yPcc(t)}
-							stroke="var(--border-light)" stroke-width="0.5" opacity="0.5"/>
-					{/if}
+							<!-- Grid -->
+							{#each Y_TICKS as t}
+								{#if t !== 0}
+									<line x1={ML} x2={W - MR} y1={yPcc(t)} y2={yPcc(t)}
+										stroke="var(--border-light)" stroke-width="0.5" opacity="0.5"/>
+								{/if}
+							{/each}
+							{#each X_YEAR_TICKS as yr}
+								<line x1={xYear(yr)} x2={xYear(yr)} y1={MT} y2={MT + PH}
+									stroke="var(--border-light)" stroke-width="0.5" opacity="0.3"/>
+							{/each}
+
+							<!-- Trend CI band -->
+							<path d={panel.band} fill={panel.col} opacity="0.12"/>
+
+							<!-- Trend line -->
+							<line
+								x1={xYear(X_YEAR_MIN)} y1={yPcc(panel.trend.predict(X_YEAR_MIN))}
+								x2={xYear(X_YEAR_MAX)} y2={yPcc(panel.trend.predict(X_YEAR_MAX))}
+								stroke={panel.col} stroke-width="2.5" opacity="0.7"
+							/>
+
+							<!-- Dots (uniform size) -->
+							{#each panel.dots as s}
+								<circle
+									cx={xYear(s.year)} cy={yPcc(s.pcc)}
+									r={5}
+									fill={panel.col}
+									opacity={active ? (inBox(s, sel) ? 0.8 : 0.12) : 0.65}
+									stroke="var(--bg)" stroke-width="1"
+								/>
+							{/each}
+
+							<!-- Selection box -->
+							{#if sel && active}
+								<rect
+									x={boxRect(sel).x} y={boxRect(sel).y}
+									width={boxRect(sel).width} height={boxRect(sel).height}
+									fill={panel.col} fill-opacity="0.06"
+									stroke={panel.col} stroke-width="1.5" stroke-dasharray="4,3" rx="3"
+								/>
+							{/if}
+
+							<!-- Y-axis -->
+							{#each Y_TICKS as t}
+								<line x1={ML - 4} x2={ML} y1={yPcc(t)} y2={yPcc(t)}
+									stroke="var(--text-muted)" stroke-width="1"/>
+								<text x={ML - 8} y={yPcc(t) + 4}
+									text-anchor="end" class="tick-label">{t.toFixed(1)}</text>
+							{/each}
+							<text x={14} y={MT + PH / 2}
+								transform="rotate(-90, 14, {MT + PH / 2})"
+								text-anchor="middle" class="axis-title">Average effect size (PCC)</text>
+
+							<!-- X-axis -->
+							<line x1={ML} x2={W - MR} y1={MT + PH} y2={MT + PH}
+								stroke="var(--border-light)" stroke-width="1"/>
+							{#each X_YEAR_TICKS as yr}
+								<line x1={xYear(yr)} x2={xYear(yr)} y1={MT + PH} y2={MT + PH + 6}
+									stroke="var(--text-muted)" stroke-width="1"/>
+								<text x={xYear(yr)} y={MT + PH + 22}
+									text-anchor="middle" class="tick-label">{yr}</text>
+							{/each}
+							<text x={ML + PW / 2} y={H_SCATTER - 5}
+								text-anchor="middle" class="axis-title">Publication year</text>
+
+							<text x={W - MR - 4} y={yPcc(0) - 6}
+								text-anchor="end" class="zero-label">PCC = 0</text>
+
+							<!-- Floating mean + CI -->
+							<line x1={CI_X} x2={CI_X}
+								y1={yPcc(stats.mean + 1.96 * stats.se)}
+								y2={yPcc(stats.mean - 1.96 * stats.se)}
+								stroke={panel.col} stroke-width="2" stroke-linecap="round" opacity="0.7" class="ci-anim"/>
+							<line x1={CI_X - 5} x2={CI_X + 5}
+								y1={yPcc(stats.mean + 1.96 * stats.se)}
+								y2={yPcc(stats.mean + 1.96 * stats.se)}
+								stroke={panel.col} stroke-width="1.5" opacity="0.7" class="ci-anim"/>
+							<line x1={CI_X - 5} x2={CI_X + 5}
+								y1={yPcc(stats.mean - 1.96 * stats.se)}
+								y2={yPcc(stats.mean - 1.96 * stats.se)}
+								stroke={panel.col} stroke-width="1.5" opacity="0.7" class="ci-anim"/>
+							<circle cx={CI_X} cy={yPcc(stats.mean)} r={5}
+								fill={panel.col} opacity="0.9" class="ci-anim"/>
+							<text x={CI_X + 12} y={yPcc(stats.mean) + 4}
+								text-anchor="start" class="ci-val" fill={panel.col}>
+								{stats.mean.toFixed(3)}
+							</text>
+							<text x={CI_X} y={MT + PH + 22}
+								text-anchor="middle" class="ci-axis-label">mean</text>
+						</svg>
+
+						<p class="sel-info">
+							{#if active}
+								{selStudies.length} of {panel.dots.length} studies selected
+								<button class="clear-btn" onclick={() => clearSel(panel.key)}>Clear</button>
+							{:else}
+								{panel.dots.length} studies — drag to select
+							{/if}
+						</p>
+					</div>
 				{/each}
-
-				<!-- Grid lines (vertical) -->
-				{#each X_YEAR_TICKS as yr}
-					<line x1={xYear(yr)} x2={xYear(yr)} y1={MT} y2={MT + PH}
-						stroke="var(--border-light)" stroke-width="0.5" opacity="0.3"/>
-				{/each}
-
-				<!-- Trend CI band -->
-				<path d={ciBand} fill="var(--text)" opacity="0.06"/>
-
-				<!-- Trend line -->
-				<line
-					x1={xYear(X_YEAR_MIN)} y1={yPcc(trend.predict(X_YEAR_MIN))}
-					x2={xYear(X_YEAR_MAX)} y2={yPcc(trend.predict(X_YEAR_MAX))}
-					stroke="var(--text)" stroke-width="2" opacity="0.35"
-				/>
-
-				<!-- Study dots -->
-				{#each studies as s}
-					<circle
-						cx={xYear(s.year)} cy={yPcc(s.pcc)}
-						r={dotR(s.n)}
-						fill={s.pcc >= 0 ? 'var(--region-americas)' : 'var(--region-africa)'}
-						opacity={selActive ? (inSel(s) ? 0.8 : 0.12) : 0.65}
-						stroke="var(--bg)" stroke-width="1"
-					/>
-				{/each}
-
-				<!-- Selection rectangle -->
-				{#if sel && selActive}
-					<rect
-						x={selRect(sel).x} y={selRect(sel).y}
-						width={selRect(sel).width} height={selRect(sel).height}
-						fill="var(--text)" fill-opacity="0.05"
-						stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="4,3"
-						rx="3"
-					/>
-				{/if}
-
-				<!-- Y-axis -->
-				{#each Y_TICKS as t}
-					<line x1={ML - 4} x2={ML} y1={yPcc(t)} y2={yPcc(t)}
-						stroke="var(--text-muted)" stroke-width="1"/>
-					<text x={ML - 8} y={yPcc(t) + 4}
-						text-anchor="end" class="tick-label">{t.toFixed(1)}</text>
-				{/each}
-				<text
-					x={14} y={MT + PH / 2}
-					transform="rotate(-90, 14, {MT + PH / 2})"
-					text-anchor="middle" class="axis-title">
-					Average effect size (PCC)
-				</text>
-
-				<!-- X-axis -->
-				<line x1={ML} x2={W - MR} y1={MT + PH} y2={MT + PH}
-					stroke="var(--border-light)" stroke-width="1"/>
-				{#each X_YEAR_TICKS as yr}
-					<line x1={xYear(yr)} x2={xYear(yr)} y1={MT + PH} y2={MT + PH + 6}
-						stroke="var(--text-muted)" stroke-width="1"/>
-					<text x={xYear(yr)} y={MT + PH + 22}
-						text-anchor="middle" class="tick-label">{yr}</text>
-				{/each}
-				<text x={ML + PW / 2} y={H_SCATTER - 5}
-					text-anchor="middle" class="axis-title">
-					Publication year
-				</text>
-
-				<!-- Zero label -->
-				<text x={W - MR - 4} y={yPcc(0) - 6}
-					text-anchor="end" class="zero-label">PCC = 0</text>
-
-				<!-- Floating mean dot + CI whisker -->
-				<line x1={CI_X} x2={CI_X}
-					y1={yPcc(selMean + 1.96 * selSE)}
-					y2={yPcc(selMean - 1.96 * selSE)}
-					stroke="var(--text)" stroke-width="2" stroke-linecap="round" opacity="0.6" class="ci-anim"/>
-				<line x1={CI_X - 5} x2={CI_X + 5}
-					y1={yPcc(selMean + 1.96 * selSE)}
-					y2={yPcc(selMean + 1.96 * selSE)}
-					stroke="var(--text)" stroke-width="1.5" opacity="0.6" class="ci-anim"/>
-				<line x1={CI_X - 5} x2={CI_X + 5}
-					y1={yPcc(selMean - 1.96 * selSE)}
-					y2={yPcc(selMean - 1.96 * selSE)}
-					stroke="var(--text)" stroke-width="1.5" opacity="0.6" class="ci-anim"/>
-				<circle cx={CI_X} cy={yPcc(selMean)} r={5}
-					fill="var(--text)" opacity="0.7" class="ci-anim"/>
-				<text x={CI_X + 12} y={yPcc(selMean) + 4}
-					text-anchor="start" class="ci-val" fill="var(--text)">
-					{selMean.toFixed(3)}
-				</text>
-				<text x={CI_X} y={MT + PH + 22}
-					text-anchor="middle" class="ci-axis-label">mean</text>
-			</svg>
-
-			<p class="sel-info">
-				{#if selActive}
-					{selectedStudies.length} of 32 studies selected
-					<button class="clear-btn" onclick={clearSel}>Clear</button>
-				{:else}
-					32 studies — drag to select
-				{/if}
-			</p>
+			</div>
 		</div>
 
 		<p class="methodology-note">
 			Data from Table 1 of Alptekin &amp; Levine (2012), "Military Expenditure and Economic Growth:
 			A Meta-Analysis," <em>European Journal of Political Economy</em> 28(4), 636–650. Each dot
-			represents the average partial correlation coefficient (PCC) within a single study. Dot size
-			is proportional to the number of estimates within the study (range: 1–29). The trend line is
-			a simple OLS fit with a 95% confidence band. The floating dot on the right shows the mean PCC
-			of the selected (or all) studies with 95% CI.
+			is the average partial correlation coefficient (PCC) within a single study. Country
+			classification follows the paper's moderator coding: "developed" denotes studies focused on
+			OECD, NATO, or industrial economies; "developing" includes LDC-focused and mixed samples.
+			The trend line is a simple OLS fit with a 95% confidence band.
 		</p>
 	</div>
 </section>
 
 <style>
-	.growth-section {
-		padding: 2rem 0 8rem;
-	}
-
-	.growth-content {
-		width: 100%;
-	}
+	.growth-section { padding: 2rem 0 8rem; }
+	.growth-content { width: 100%; }
 
 	.section-title {
 		font-family: var(--font-display);
@@ -370,14 +389,9 @@
 		text-underline-offset: 2px;
 		transition: color 0.2s ease;
 	}
+	.section-intro :global(.source-link:hover) { color: var(--text); }
 
-	.section-intro :global(.source-link:hover) {
-		color: var(--text);
-	}
-
-	.chart-block {
-		margin-top: 2rem;
-	}
+	.chart-block { margin-top: 2rem; }
 
 	.chart-label {
 		font-family: var(--font-sans);
@@ -396,15 +410,26 @@
 		color: var(--text-light);
 	}
 
-	.chart-svg {
-		width: 100%;
-		height: auto;
-		display: block;
+	.chart-svg { width: 100%; height: auto; display: block; }
+	.scatter-svg { cursor: crosshair; user-select: none; }
+
+	.scatter-stack { display: flex; flex-direction: column; gap: 3rem; }
+	.scatter-panel { width: 100%; }
+
+	.panel-label {
+		font-family: var(--font-display);
+		font-size: 1.4rem;
+		font-weight: 400;
+		font-style: italic;
+		margin: 0 0 0.3rem;
 	}
 
-	.scatter-svg {
-		cursor: crosshair;
-		user-select: none;
+	.panel-count {
+		font-family: var(--font-sans);
+		font-size: 0.85rem;
+		font-weight: 300;
+		font-style: normal;
+		color: var(--text-light);
 	}
 
 	.sel-info {
@@ -429,48 +454,14 @@
 		vertical-align: middle;
 		transition: color 0.2s, border-color 0.2s;
 	}
+	.clear-btn:hover { color: var(--text); border-color: var(--text-muted); }
 
-	.clear-btn:hover {
-		color: var(--text);
-		border-color: var(--text-muted);
-	}
-
-	:global(.ci-anim) {
-		transition: all 0.4s ease;
-	}
-
-	:global(.ci-val) {
-		font-family: var(--font-display);
-		font-size: 13px;
-		font-style: italic;
-		font-weight: 400;
-		transition: all 0.4s ease;
-	}
-
-	:global(.ci-axis-label) {
-		font-family: var(--font-sans);
-		font-size: 10px;
-		fill: var(--text-light);
-	}
-
-	:global(.zero-label) {
-		font-family: var(--font-sans);
-		font-size: 10px;
-		font-weight: 400;
-		fill: var(--text-light);
-	}
-
-	:global(.tick-label) {
-		font-family: var(--font-sans);
-		font-size: 12px;
-		fill: var(--text-muted);
-	}
-
-	:global(.axis-title) {
-		font-family: var(--font-sans);
-		font-size: 12px;
-		fill: var(--text-muted);
-	}
+	:global(.ci-anim) { transition: all 0.4s ease; }
+	:global(.ci-val) { font-family: var(--font-display); font-size: 13px; font-style: italic; font-weight: 400; transition: all 0.4s ease; }
+	:global(.ci-axis-label) { font-family: var(--font-sans); font-size: 10px; fill: var(--text-light); }
+	:global(.zero-label) { font-family: var(--font-sans); font-size: 10px; font-weight: 400; fill: var(--text-light); }
+	:global(.tick-label) { font-family: var(--font-sans); font-size: 12px; fill: var(--text-muted); }
+	:global(.axis-title) { font-family: var(--font-sans); font-size: 12px; fill: var(--text-muted); }
 
 	.methodology-note {
 		font-family: var(--font-sans);
@@ -483,10 +474,7 @@
 		border-top: 1px solid var(--border-light);
 		padding-top: 1.5rem;
 	}
-
-	.methodology-note em {
-		font-style: italic;
-	}
+	.methodology-note em { font-style: italic; }
 
 	@media (max-width: 768px) {
 		.growth-section { padding: 2rem 0 6rem; }

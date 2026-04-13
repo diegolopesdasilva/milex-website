@@ -437,7 +437,7 @@
 
 <style>
 	.growth-section {
-		padding: 6rem 0 8rem;
+		padding: 2rem 0 8rem;
 	}
 
 	.growth-content {

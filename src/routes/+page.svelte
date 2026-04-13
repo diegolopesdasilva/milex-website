@@ -733,7 +733,7 @@
 
 	/* ── Ending section — width matched to stream tail ── */
 	.ending {
-		padding: 4vh 0 14vh;
+		padding: 4vh 0 4vh;
 	}
 
 	.ending-figure {

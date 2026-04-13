@@ -363,22 +363,8 @@
 <main>
 	<Hero />
 
-	<section class="intro-stream" bind:clientWidth={introW}>
-		<!-- Left taper float -->
-		<div
-			class="taper-float taper-left"
-			style:width="{taperLeftW}px"
-			style:shape-outside="polygon(0 0, {TAPER_TOP_PAD}px 0, 100% 100%, 0 100%)"
-			style:clip-path="polygon(0 0, {TAPER_TOP_PAD}px 0, 100% 100%, 0 100%)"
-		></div>
-		<!-- Right taper float -->
-		<div
-			class="taper-float taper-right"
-			style:width="{taperRightW}px"
-			style:shape-outside="polygon({taperRightW - TAPER_TOP_PAD}px 0, 100% 0, 100% 100%, 0 100%)"
-			style:clip-path="polygon({taperRightW - TAPER_TOP_PAD}px 0, 100% 0, 100% 100%, 0 100%)"
-		></div>
-		<p class="intro-p">
+	<section class="intro-text">
+		<p>
 			While military expenditure is primarily intended to fund the armed forces and secure
 			sovereignty, it has effects that extend far beyond a country's national security. It is
 			known to affect economic growth, development, income inequality and political institutions,
@@ -390,7 +376,7 @@
 			expense of investment in other areas, but with the paradoxical result of more insecurity,
 			not less as initially intended.
 		</p>
-		<p class="intro-p">
+		<p>
 			Given its far-reaching impacts on international security and development, the
 			Stockholm International Peace Research Institute (<span class="sipri">SIPRI</span>)
 			has been tracking military expenditure for nearly six decades. Below, the data tells
@@ -537,27 +523,15 @@
 		overflow-x: hidden;
 	}
 
-	/* ── Intro stream-tapered text ── */
-	.intro-stream {
-		position: relative;
-		margin: 0 0 0;
-		padding: 0;
+	/* ── Intro text — centered over chart column ── */
+	.intro-text {
+		max-width: 700px;
+		margin: 0 auto var(--space-lg);
+		padding: 0 var(--space-lg);
+		transform: translateX(45px);
 	}
 
-	.taper-float {
-		height: 500px;
-		background: transparent;
-	}
-
-	.taper-left {
-		float: left;
-	}
-
-	.taper-right {
-		float: right;
-	}
-
-	.intro-p {
+	.intro-text p {
 		font-family: var(--font-sans);
 		font-size: clamp(1.1rem, 2vw, 1.4rem);
 		font-weight: 300;
@@ -567,7 +541,7 @@
 		margin: 0 0 1.2rem;
 	}
 
-	.intro-stream :global(.sipri) {
+	.intro-text :global(.sipri) {
 		font-family: var(--font-display);
 		font-weight: 400;
 		color: #E2003F;
@@ -584,8 +558,7 @@
 		font-weight: 400;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		margin-top: 0.5rem;
-		margin-bottom: 0;
+		margin-top: var(--space-lg);
 		animation: drift 2.5s ease infinite;
 	}
 

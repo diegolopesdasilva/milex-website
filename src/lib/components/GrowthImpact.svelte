@@ -233,17 +233,28 @@
 
 <section class="growth-section">
 	<div class="growth-content">
-		<h2 class="section-title">What Does the Evidence Say?</h2>
+		<h2 class="section-title">Is There Such a Thing as a "Defence Dividend"?</h2>
 		<p class="section-intro">
-			The relationship between military spending and economic growth has been debated for decades.
-			Alptekin &amp; Levine (2012) synthesised <strong>169 estimates</strong> from
-			<strong>32 studies</strong> in the most comprehensive meta-analysis of this literature.
-			Their headline finding: the average partial correlation between military spending and growth
-			is small and positive (PCC ≈ 0.07), with no evidence of publication bias —
-			but the results are highly heterogeneous. Of the 169 estimates,
-			<strong>77</strong> are statistically significant: 26 negative (military spending
-			harms growth) and 51 positive (military spending helps growth).
-			Where you look, and when, matters enormously.
+			Prime Minister Starmer said in 2025 that "there is a lot of talk about the end of the
+			peace dividend: our task now is to seize the defence dividend, felt directly in the pockets
+			of working people, creating the jobs of the future." His remark echoes a longstanding argument
+			that military expenditures contribute to economic growth.
+		</p>
+		<p class="section-intro">
+			Researchers have been studying this link with econometric methods since at least the late 1970s.
+			Initially, it seemed that military expenditures did indeed contribute to economic growth. However,
+			over time results began to weaken and eventually reverse. The changes are mostly due to more data
+			and more sophisticated statistical methods. Nowadays, most of the evidence points to a null or
+			negative effect of military expenditures on economic growth.
+		</p>
+		<p class="section-intro">
+			The two figures below plot the estimates of a meta-study on the relationship between military
+			expenditures and economic growth. The trend is quite clear, as the strength and signal of the
+			effect weaken and change over time.
+		</p>
+		<p class="section-intro">
+			Remarks like those of Starmer seem to be greatly influenced by earlier results — decades old —
+			that have mostly considered industrial economies.
 		</p>
 
 		<div class="chart-block">

@@ -358,6 +358,12 @@
 			tracking military expenditure for nearly six decades. Below, the data tells a visual
 			history from the end of the cold war, through the peace dividend years, up to now.
 		</p>
+		<div class="scroll-hint">
+			<span>Scroll to explore</span>
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+				<path d="M12 5v14M19 12l-7 7-7-7" />
+			</svg>
+		</div>
 	</section>
 
 	<section class="legend-bar">
@@ -490,8 +496,8 @@
 
 	/* ── Intro text ── */
 	.intro-text {
-		max-width: 900px;
-		margin: 0 auto var(--space-xl);
+		max-width: 750px;
+		margin: 0 auto var(--space-lg);
 		padding: 0 var(--space-lg);
 	}
 
@@ -503,6 +509,26 @@
 		color: var(--text-muted);
 		text-align: justify;
 		margin: 0 0 1.2rem;
+	}
+
+	.scroll-hint {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--text-muted);
+		font-size: 1rem;
+		font-family: var(--font-sans);
+		font-weight: 400;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		margin-top: var(--space-lg);
+		animation: drift 2.5s ease infinite;
+	}
+
+	@keyframes drift {
+		0%, 100% { transform: translateY(0); opacity: 0.5; }
+		50% { transform: translateY(5px); opacity: 0.8; }
 	}
 
 	/* ── Legend bar ── */

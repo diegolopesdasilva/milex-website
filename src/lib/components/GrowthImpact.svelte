@@ -385,8 +385,8 @@
 							<circle cx={CI_X} cy={yPcc(stats.mean)} r={6}
 								fill={panel.col} opacity="0.9" class="ci-anim"/>
 							<!-- Value label -->
-							<text x={CI_X} y={yPcc(stats.mean) - 12}
-								text-anchor="middle" class="ci-val" fill={panel.col}>
+							<text x={CI_X + 14} y={yPcc(stats.mean) + 4}
+								text-anchor="start" class="ci-val" fill={panel.col}>
 								{stats.mean.toFixed(3)}
 							</text>
 							<!-- "mean" label -->

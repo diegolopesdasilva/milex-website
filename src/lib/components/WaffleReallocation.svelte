@@ -310,9 +310,10 @@
 
 	<div class="sources-note">
 		<p>
-			Impact estimates based on: <em>GiveWell</em> (2024) for health interventions (~$5,000 per life saved via malaria prevention);
-			<em>World Bank Education Finance Watch</em> (2024) for education (~$456 per child per year in low-income countries);
-			<em>IPCC AR6</em> (2023) for climate mitigation (~$50 per ton CO&#8322; for cost-effective abatement).
+			Impact estimates based on:
+			<a href="https://www.givewell.org/charities/top-charities" target="_blank" rel="noopener"><em>GiveWell</em></a> (2024) for health interventions (~$5,000 per life saved via malaria prevention);
+			<a href="https://www.worldbank.org/en/topic/education/publication/education-finance-watch" target="_blank" rel="noopener"><em>World Bank Education Finance Watch</em></a> (2024) for education (~$456 per child per year in low-income countries);
+			<a href="https://www.ipcc.ch/report/ar6/wg3/" target="_blank" rel="noopener"><em>IPCC AR6</em></a> (2023) for climate mitigation (~$50 per ton CO&#8322; for cost-effective abatement).
 			These are approximate figures intended for illustration.
 		</p>
 	</div>
@@ -620,6 +621,17 @@
 		font-style: normal;
 		font-weight: 500;
 		color: var(--text-muted);
+	}
+
+	.sources-note a {
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		transition: color 0.2s ease;
+	}
+
+	.sources-note a:hover {
+		color: var(--text);
 	}
 
 	/* ── Responsive ── */

@@ -20,6 +20,8 @@
 
 	.hero-content {
 		max-width: 900px;
+		/* Shift to align with chart column center (90px ruler / 2 = 45px) */
+		transform: translateX(45px);
 	}
 
 	h1 {

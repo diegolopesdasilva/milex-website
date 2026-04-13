@@ -354,9 +354,10 @@
 			not less as initially intended.
 		</p>
 		<p>
-			Given its far-reaching impacts on international security and development, SIPRI has been
-			tracking military expenditure for nearly six decades. Below, the data tells a visual
-			history from the end of the cold war, through the peace dividend years, up to now.
+			Given its far-reaching impacts on international security and development, the
+			Stockholm International Peace Research Institute (<span class="sipri">SIPRI</span>)
+			has been tracking military expenditure for nearly six decades. Below, the data tells
+			a visual history from the end of the cold war, through the peace dividend years, up to now.
 		</p>
 		<div class="scroll-hint">
 			<span>Scroll to explore</span>
@@ -504,6 +505,11 @@
 		padding: 0 var(--space-lg);
 		/* Shift center to match chart-column center */
 		transform: translateX(45px);
+	}
+
+	.intro-text :global(.sipri) {
+		font-weight: 700;
+		color: #E2003F;
 	}
 
 	.intro-text p {

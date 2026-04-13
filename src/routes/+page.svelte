@@ -494,11 +494,16 @@
 		overflow-x: hidden;
 	}
 
-	/* ── Intro text — aligned with chart column ── */
+	/* ── Intro text — centered over the chart column ──
+	   The chart column starts at 90px (20px ruler margin + 70px ruler).
+	   Shift the centering axis rightward by half of 90px = 45px so
+	   the text block visually sits over the streamgraph center. */
 	.intro-text {
-		/* 20px left-column margin + 70px ruler = 90px offset to match chart-column left edge */
-		margin: 0 0 var(--space-lg);
-		padding: 0 20px 0 90px;
+		max-width: 700px;
+		margin: 0 auto var(--space-lg);
+		padding: 0 var(--space-lg);
+		/* Shift center to match chart-column center */
+		transform: translateX(45px);
 	}
 
 	.intro-text p {
@@ -509,7 +514,6 @@
 		color: var(--text-muted);
 		text-align: justify;
 		margin: 0 0 1.2rem;
-		max-width: 700px;
 	}
 
 	.scroll-hint {

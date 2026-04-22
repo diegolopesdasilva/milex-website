@@ -143,6 +143,37 @@
 	// Current "active" year based on scroll position (NOT reactive — updated via DOM)
 	let activeYear = firstYear;
 
+	// ── Sliding value bar state ──
+	let slidingBarYear = $state(firstYear);
+	let slidingBarTotal = $state(0);
+	let slidingBarLeft = $state(0);
+	let slidingBarWidth = $state(0);
+	let slidingBarVisible = $state(false);
+
+	function updateSlidingBar(year: number) {
+		const clamped = Math.max(firstYear, Math.min(lastYear, year));
+		slidingBarYear = clamped;
+
+		const chartCol = chartSection?.querySelector('.chart-column') as HTMLElement;
+		if (!chartCol) return;
+		const chartColW = chartCol.clientWidth;
+		const absExtent = getMaxHalf(activeRegion) * 1.5;
+		const padL = 20, plotW = chartColW - 40;
+
+		// Find the data row for this year (or interpolate)
+		const row = data.find(d => d.year === clamped);
+		if (!row) return;
+
+		const total = getYearTotal(row, activeRegion);
+		slidingBarTotal = total;
+
+		const half = total / 2;
+		const rightEdge = padL + ((half + absExtent) / (2 * absExtent)) * plotW;
+		const leftEdge = padL + ((-half + absExtent) / (2 * absExtent)) * plotW;
+		slidingBarLeft = leftEdge;
+		slidingBarWidth = rightEdge - leftEdge;
+	}
+
 	// Right edge x positions for each event (relative to chart-column)
 	let contextPositions: { x: number; year: number }[] = $state([]);
 	// Per-event stream edge positions for shape-following text (multiple y samples)
@@ -187,9 +218,17 @@
 				const usableFrac = 1 - 2 * paddingFrac;
 				const yearFrac = (scrollProgress - paddingFrac) / usableFrac;
 				const newYear = Math.round(firstYear + yearFrac * yearRange);
+
+				// Show sliding bar only while inside the chart section (with some margin)
+				const inChart = yearFrac >= 0 && yearFrac <= 1;
+				slidingBarVisible = inChart;
+
 				if (newYear !== activeYear) {
 					activeYear = newYear;
 					updateRulerStyles(newYear);
+				}
+				if (inChart) {
+					updateSlidingBar(Math.max(firstYear, Math.min(lastYear, newYear)));
 				}
 			});
 		}
@@ -390,7 +429,7 @@
 		</div>
 	</section>
 
-	<section class="legend-bar">
+	<section class="legend-bar" class:legend-hidden={!slidingBarVisible}>
 		<Legend {activeRegion} onRegionClick={(r) => { activeRegion = r; }} />
 	</section>
 
@@ -415,14 +454,15 @@
 		<div class="chart-column">
 			<StackedAreaChart {data} {events} heightPx={chartHeight} {activeRegion} />
 
-			<!-- Bracket at top: figure + solid line matching stream width -->
+			<!-- Sliding value bar: follows active year -->
 			<div
 				class="bracket-line"
-				style:top="{yearToPercent(firstYear)}%"
-				style:left="{bracketLeft}px"
-				style:width="{bracketWidth}px"
+				class:bracket-hidden={!slidingBarVisible}
+				style:top="{yearToPercent(slidingBarYear)}%"
+				style:left="{slidingBarLeft}px"
+				style:width="{slidingBarWidth}px"
 			>
-				<span class="bracket-label">${Math.round(firstYearTotal)} Billion</span>
+				<span class="bracket-label">${Math.round(slidingBarTotal)} Billion</span>
 				<div class="bracket-bar">
 					<span class="bracket-tick-left"></span>
 					<span class="bracket-tick-right"></span>
@@ -642,20 +682,30 @@
 		backdrop-filter: blur(8px);
 		border-bottom: 1px solid var(--border-light);
 		padding: 0.6rem var(--space-lg);
-		/* Offset to center over the chart column (accounting for 90px ruler on left) */
 		padding-left: calc(var(--space-lg) + 90px);
+		transition: opacity 0.4s ease, transform 0.4s ease;
 	}
 
-	/* ── Bracket at top of stream ── */
+	.legend-bar.legend-hidden {
+		opacity: 0;
+		transform: translateY(-100%);
+		pointer-events: none;
+	}
+
+	/* ── Sliding value bar ── */
 	.bracket-line {
 		position: absolute;
 		transform: translateY(-3.5rem);
 		z-index: 4;
 		display: flex;
 		flex-direction: column;
+		transition: top 0.35s ease, left 0.35s ease, width 0.35s ease, opacity 0.4s ease;
 		align-items: center;
 		pointer-events: none;
-		transition: left 0.6s ease, width 0.6s ease;
+	}
+
+	.bracket-line.bracket-hidden {
+		opacity: 0;
 	}
 
 	.bracket-label {

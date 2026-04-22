@@ -110,6 +110,33 @@
 		return { mean: m, se: Math.sqrt(v / n) };
 	}
 
+	// ── Hover tooltip state ──
+	let hoveredStudy: Study | null = $state(null);
+	let tooltipX = $state(0);
+	let tooltipY = $state(0);
+
+	function findNearestDot(e: MouseEvent, dots: Study[]) {
+		if (draggingPanel) { hoveredStudy = null; return; }
+		const svg = (e.currentTarget as SVGSVGElement);
+		const pt = getSvgPoint(e, svg);
+		const rect = svg.getBoundingClientRect();
+
+		let best: Study | null = null;
+		let bestDist = 12; // max pixel distance to trigger (in SVG coords)
+		for (const s of dots) {
+			const dx = xYear(s.year) - pt.x;
+			const dy = yPcc(s.pcc) - pt.y;
+			const dist = Math.sqrt(dx * dx + dy * dy);
+			if (dist < bestDist) {
+				bestDist = dist;
+				best = s;
+			}
+		}
+		hoveredStudy = best;
+		tooltipX = e.clientX - rect.left;
+		tooltipY = e.clientY - rect.top;
+	}
+
 	// ── Selection state per panel ──
 	let selDeving: { x0: number; y0: number; x1: number; y1: number } | null = $state(null);
 	let selDeved:  { x0: number; y0: number; x1: number; y1: number } | null = $state(null);
@@ -222,15 +249,16 @@
 							<span class="panel-count">({panel.dots.length} studies)</span>
 						</p>
 
+						<div class="scatter-wrap">
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<svg
 							viewBox="0 0 {W} {H_SCATTER}"
 							preserveAspectRatio="xMidYMid meet"
 							class="chart-svg scatter-svg"
 							onmousedown={(e) => onDown(e, panel.key)}
-							onmousemove={onMove}
+							onmousemove={(e) => { onMove(e); findNearestDot(e, panel.dots); }}
 							onmouseup={onUp}
-							onmouseleave={onUp}
+							onmouseleave={() => { onUp(); hoveredStudy = null; }}
 						>
 							<!-- Zone shading -->
 							<rect x={ML} y={MT} width={PW} height={yPcc(0) - MT}
@@ -268,10 +296,12 @@
 							{#each panel.dots as s}
 								<circle
 									cx={xYear(s.year)} cy={yPcc(s.pcc)}
-									r={5}
+									r={hoveredStudy === s ? 9 : 5}
 									fill={panel.col}
-									opacity={active ? (inBox(s, sel) ? 0.8 : 0.12) : 0.65}
-									stroke="var(--bg)" stroke-width="1"
+									opacity={active ? (inBox(s, sel) ? 0.8 : 0.12) : (hoveredStudy === s ? 1 : 0.65)}
+									stroke={hoveredStudy === s ? 'var(--text)' : 'var(--bg)'}
+									stroke-width={hoveredStudy === s ? 2 : 1}
+									class="study-dot"
 								/>
 							{/each}
 
@@ -333,6 +363,17 @@
 							<text x={CI_X} y={MT + PH + 22}
 								text-anchor="middle" class="ci-axis-label">mean</text>
 						</svg>
+						{#if hoveredStudy && panel.dots.includes(hoveredStudy)}
+							<div
+								class="dot-tooltip"
+								style:left="{tooltipX}px"
+								style:top="{tooltipY - 40}px"
+							>
+								{hoveredStudy.label}
+								<span class="dot-tooltip-pcc">PCC: {hoveredStudy.pcc.toFixed(3)}</span>
+							</div>
+						{/if}
+						</div>
 
 						<p class="sel-info">
 							{#if active}
@@ -415,6 +456,41 @@
 
 	.scatter-stack { display: flex; flex-direction: column; gap: 3rem; }
 	.scatter-panel { width: 100%; }
+
+	.scatter-wrap {
+		position: relative;
+	}
+
+	:global(.study-dot) {
+		transition: r 0.15s ease;
+		cursor: default;
+	}
+
+	:global(.study-dot:hover) {
+		r: 7;
+	}
+
+	.dot-tooltip {
+		position: absolute;
+		transform: translateX(-50%);
+		background: rgba(255, 252, 239, 0.95);
+		border: 1px solid var(--border-light);
+		border-radius: 4px;
+		padding: 0.25rem 0.6rem;
+		font-family: var(--font-sans);
+		font-size: 0.82rem;
+		font-weight: 400;
+		color: var(--text);
+		white-space: nowrap;
+		pointer-events: none;
+		box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+		z-index: 10;
+	}
+
+	.dot-tooltip-pcc {
+		color: var(--text-light);
+		margin-left: 0.4rem;
+	}
 
 	.panel-label {
 		font-family: var(--font-display);

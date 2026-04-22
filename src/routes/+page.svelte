@@ -105,6 +105,7 @@
 				measureStreamEdges();
 				measureStreamTail();
 				measureBracket();
+				updateSlidingBar(slidingBarYear);
 			}
 		});
 	});
@@ -151,7 +152,7 @@
 	let slidingBarVisible = $state(false);
 
 	function updateSlidingBar(year: number) {
-		const clamped = Math.max(firstYear, Math.min(lastYear, year));
+		const clamped = Math.max(firstYear, Math.min(lastYear - 1, year));
 		slidingBarYear = clamped;
 
 		const chartCol = chartSection?.querySelector('.chart-column') as HTMLElement;
@@ -228,7 +229,7 @@
 					updateRulerStyles(newYear);
 				}
 				if (inChart) {
-					updateSlidingBar(Math.max(firstYear, Math.min(lastYear, newYear)));
+					updateSlidingBar(Math.max(firstYear, Math.min(lastYear - 1, newYear)));
 				}
 			});
 		}
@@ -452,7 +453,7 @@
 
 		<!-- Chart column with overlaid annotations on both sides -->
 		<div class="chart-column">
-			<StackedAreaChart {data} {events} heightPx={chartHeight} {activeRegion} />
+			<StackedAreaChart {data} {events} heightPx={chartHeight} {activeRegion} onRegionClick={(r) => { activeRegion = r; }} />
 
 			<!-- Sliding value bar: follows active year -->
 			<div
@@ -551,8 +552,8 @@
 
 		<div class="acknowledgement">
 			<p>
-				The data used to build this visualization is available thanks to the hard and attentive work
-				of dozens and dozens of researchers that have worked at SIPRI over the years.
+				The data used to build this visualization is available thanks to the hard work
+				of dozens and dozens of researchers, editors, librarians and support staff that have worked at SIPRI over the years.
 				The Military Expenditure chapter in the SIPRI Yearbook is a valuable source not only to data
 				visualization pages like this one, but also to policymakers, historians, scholars, journalists,
 				citizens and pretty much anyone interested in understanding how much money goes to the military.
@@ -563,7 +564,8 @@
 				A special thanks to all of those that have authored SIPRI Military Expenditure chapters over the years.
 				The following list is incomplete and I apologize for the omissions; these are the authors
 				from 1992–2025 of the military expenditure chapters of the Yearbook. There are still those
-				that preceded us or assisted the work in some manner. For those who will succeed us, I thank you in advance.
+				that preceded us; SIPRI has been publishing the Yearbook since 1969.
+				For those who will succeed us, I thank you in advance.
 			</p>
 			<p class="authors-list">
 				Thanks to
@@ -695,7 +697,7 @@
 	/* ── Sliding value bar ── */
 	.bracket-line {
 		position: absolute;
-		transform: translateY(-3.5rem);
+		transform: translateY(-100%);
 		z-index: 4;
 		display: flex;
 		flex-direction: column;
@@ -720,18 +722,20 @@
 
 	.bracket-bar {
 		width: 100%;
-		height: 1px;
-		background: var(--text-muted);
+		height: 2px;
+		background: var(--text);
+		opacity: 0.6;
 		position: relative;
 	}
 
 	.bracket-tick-left,
 	.bracket-tick-right {
 		position: absolute;
-		top: -4px;
-		width: 1px;
-		height: 9px;
-		background: var(--text-muted);
+		top: -5px;
+		width: 2px;
+		height: 12px;
+		background: var(--text);
+		opacity: 0.6;
 	}
 
 	.bracket-tick-left { left: 0; }
@@ -795,6 +799,7 @@
 		width: 280px;
 		pointer-events: none;
 		z-index: 5;
+		overflow: hidden;
 	}
 
 	.event-card-left {

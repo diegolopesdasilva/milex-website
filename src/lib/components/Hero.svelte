@@ -10,12 +10,12 @@
 
 <style>
 	.hero {
-		min-height: 60vh;
+		min-height: 70vh;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		text-align: center;
-		padding: var(--space-xxl) var(--space-lg) var(--space-lg);
+		padding: calc(var(--space-xxl) * 2) var(--space-lg) var(--space-lg);
 	}
 
 	.hero-content {

@@ -149,7 +149,7 @@
 	let slidingBarTotal = $state(0);
 	let slidingBarLeft = $state(0);
 	let slidingBarWidth = $state(0);
-	let slidingBarVisible = $state(false);
+	let slidingBarVisible = $state(true);
 
 	function updateSlidingBar(year: number) {
 		const clamped = Math.max(firstYear, Math.min(lastYear - 1, year));
@@ -220,17 +220,17 @@
 				const yearFrac = (scrollProgress - paddingFrac) / usableFrac;
 				const newYear = Math.round(firstYear + yearFrac * yearRange);
 
-				// Show sliding bar only while inside the chart section (with some margin)
-				const inChart = yearFrac >= 0 && yearFrac <= 1;
-				slidingBarVisible = inChart;
+				// Show sliding bar while above or inside the chart section; hide when scrolled past
+				const pastChart = yearFrac > 1;
+				slidingBarVisible = !pastChart;
 
 				if (newYear !== activeYear) {
 					activeYear = newYear;
 					updateRulerStyles(newYear);
 				}
-				if (inChart) {
-					updateSlidingBar(Math.max(firstYear, Math.min(lastYear - 1, newYear)));
-				}
+				// Above the chart: hold at 1992. Inside: follow scroll. Past: hold at 2023.
+				const displayYear = yearFrac < 0 ? firstYear : Math.max(firstYear, Math.min(lastYear - 1, newYear));
+				updateSlidingBar(displayYear);
 			});
 		}
 

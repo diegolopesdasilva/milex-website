@@ -363,7 +363,7 @@
 							<text x={CI_X} y={MT + PH + 22}
 								text-anchor="middle" class="ci-axis-label">mean</text>
 						</svg>
-						{#if hoveredStudy && panel.dots.includes(hoveredStudy)}
+						{#if hoveredStudy && panel.dots.some(d => d.label === hoveredStudy?.label)}
 							<div
 								class="dot-tooltip"
 								style:left="{tooltipX}px"
@@ -480,7 +480,7 @@
 		font-family: var(--font-sans);
 		font-size: 0.82rem;
 		font-weight: 400;
-		color: var(--text);
+		color: var(--text-muted);
 		white-space: nowrap;
 		pointer-events: none;
 		box-shadow: 0 1px 4px rgba(0,0,0,0.08);
@@ -488,7 +488,7 @@
 	}
 
 	.dot-tooltip-pcc {
-		color: var(--text-light);
+		color: var(--text-muted);
 		margin-left: 0.4rem;
 	}
 

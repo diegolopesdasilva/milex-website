@@ -354,7 +354,7 @@
 		const pxPerYear = chartHeight / yearRange;
 		const lineHeightPx = 30;
 		const lineHeightYears = lineHeightPx / pxPerYear;
-		const numLines = 10;
+		const numLines = 20;
 
 		for (const event of events) {
 			const baseEdge = getStreamRightEdge(event.year, absExtent, padL, plotW, activeRegion);
@@ -503,6 +503,7 @@
 					style:top="{pct}%"
 					style:left="0"
 					style:width="calc(100% - 20px)"
+					style:max-height="{totalH}px"
 				>
 					<div
 						class="shape-float"
@@ -796,7 +797,7 @@
 		top: 0;
 		left: 0.5rem;
 		bottom: 0;
-		width: 280px;
+		width: clamp(160px, 22vw, 280px);
 		pointer-events: none;
 		z-index: 5;
 		overflow: hidden;

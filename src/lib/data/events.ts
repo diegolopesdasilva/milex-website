@@ -23,6 +23,14 @@ export const events: HistoricalEvent[] = [
 			'Russian military expenditure in the mid-1990s was a fraction of Soviet-era levels. The war exposed deep structural weaknesses in the armed forces, contributing to two decades of largely unreformed Soviet-era military structures.'
 	},
 	{
+		year: 1999,
+		title: 'Trough and Turning Point',
+		description:
+			'After 11 years of decline, global military spending turned upward. Russia\u2019s 1998 financial crisis had driven outlays to a post-Cold-War low; 1999 marked the reversal.',
+		context:
+			'NATO\u2019s 11-week Operation Allied Force over Kosovo and the deployment of KFOR added several billion dollars in operational costs. Russia launched the Second Chechen War and began raising defence spending after a decade of collapse. India and Pakistan, having tested nuclear weapons in 1998, increased spending amid the Kargil conflict in Kashmir.'
+	},
+	{
 		year: 2001,
 		title: '9/11 & War on Terror',
 		description:
@@ -37,6 +45,14 @@ export const events: HistoricalEvent[] = [
 			'The US-led invasion of Iraq drives a sharp surge in American and Middle Eastern military spending.',
 		context:
 			'By the end of 2011, the wars in Afghanistan and Iraq had cost the USA over $1.2 trillion in additional military expenditure, with potential long-term total costs estimated as high as $4 trillion.'
+	},
+	{
+		year: 2005,
+		title: 'War-Funded Expansion',
+		description:
+			'World spending crossed the $1 trillion mark in constant terms, erasing most of the post\u2013Cold War peace dividend. The US alone accounted for 80 per cent of the global increase that year.',
+		context:
+			'Oil-exporting states also raised spending 11 per cent as commodity prices climbed. Supplemental appropriations for operations in Afghanistan and Iraq ran at roughly $100 billion per year, driving sustained increases through the decade.'
 	},
 	{
 		year: 2008,

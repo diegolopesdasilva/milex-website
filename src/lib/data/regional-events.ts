@@ -9,6 +9,18 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'The US shifted from Cold War force structures to a smaller, expeditionary military. The Base Realignment and Closure process shut dozens of installations across the country.'
 		},
 		{
+			year: 1995,
+			title: 'Deep US Cuts, Central American Peace',
+			description: 'US military spending fell 6.2 per cent in real terms in its fourth consecutive annual cut, while civil wars in Central America ended.',
+			context: 'By 1997, Central American military spending had halved since 1990. Nicaragua\u2019s expenditure fell 89 per cent over the decade as the contras and Sandinistas demobilised. Guatemala\u2019s 1996 peace accords closed out the region\u2019s last active civil war.'
+		},
+		{
+			year: 1999,
+			title: 'Plan Colombia',
+			description: 'The United States launched a multi-year counter-narcotics and counter-insurgency aid programme for Colombia, reshaping the region\u2019s security spending.',
+			context: 'Plan Colombia channelled billions of dollars into Colombian police and military capabilities. Combined with Brazil\u2019s post-crisis recovery, it drove South American spending up 59 per cent cumulatively from 1991.'
+		},
+		{
 			year: 2001,
 			title: '9/11 & Afghan War',
 			description: 'The September 11 attacks trigger the largest US military buildup since the Korean War.',
@@ -60,10 +72,22 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'European military expenditure fell steadily through the 1990s as NATO members downsized forces and redirected budgets to social spending.'
 		},
 		{
+			year: 1997,
+			title: 'NATO Enlargement Begins',
+			description: 'The Czech Republic, Hungary and Poland were invited to join NATO at the Madrid Summit, beginning a sustained defence-budget upswing in Central Europe.',
+			context: 'All three countries raised defence spending in preparation for 1999 accession and set GDP burden targets of 1.8\u20132.4 per cent. The enlargement formalised a shift of Europe\u2019s security frontier 500 kilometres eastward.'
+		},
+		{
 			year: 1999,
 			title: 'Kosovo War',
 			description: 'NATO\'s air campaign against Yugoslavia exposes European capability gaps.',
 			context: 'The conflict highlighted Europe\'s dependence on US military assets. European nations launched capability improvement pledges but spending continued to decline.'
+		},
+		{
+			year: 2004,
+			title: 'Biggest NATO Enlargement',
+			description: 'Seven states joined NATO in the alliance\u2019s largest single expansion, and the European Defence Agency was established to coordinate EU defence procurement.',
+			context: 'Bulgaria, Estonia, Latvia, Lithuania, Romania, Slovakia and Slovenia raised spending in the years surrounding accession. Russia responded with an 8 per cent real-terms increase as oil revenues grew.'
 		},
 		{
 			year: 2008,
@@ -111,10 +135,28 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'Unlike Europe and the Americas, Asian spending did not decline significantly after the Cold War. Regional tensions and economic growth sustained budgets.'
 		},
 		{
+			year: 1997,
+			title: 'East Asian Financial Crisis',
+			description: 'The regional financial crisis forced Thailand, South Korea, Malaysia, Indonesia and the Philippines to cut or postpone military procurement.',
+			context: 'Thailand cut its defence budget three times in a single fiscal year for a cumulative 30 per cent reduction. Currency depreciations doubled the cost of arms imports; IMF conditions forced broad budget compression across the region.'
+		},
+		{
+			year: 1998,
+			title: 'Nuclear Tests in South Asia',
+			description: 'India and Pakistan each conducted nuclear weapons tests in May 1998, triggering US sanctions and a sustained regional arms dynamic.',
+			context: 'Both governments announced post-test defence increases, though actual Pakistani outlays fell 13 per cent under economic strain. India\u2019s next-year budget rose 6 per cent in real terms plus a supplementary allocation for Kashmir. The tests reset the strategic landscape for the next two decades.'
+		},
+		{
 			year: 2001,
 			title: 'War on Terror Spillover',
 			description: 'The 9/11 attacks and Afghan war draw several Asian nations into counterterrorism operations.',
 			context: 'Pakistan, Australia, and Japan all increased military spending in response to the war on terror. India accelerated defence modernisation amid persistent tensions with Pakistan.'
+		},
+		{
+			year: 2006,
+			title: 'China Overtakes Japan',
+			description: 'China surpassed Japan to become the largest military spender in Asia and moved up to fourth place globally.',
+			context: 'Chinese spending had risen roughly 195 per cent in real terms over the previous decade. North Korea\u2019s July 2006 missile tests and October 2006 nuclear test re-opened the Japanese debate on its 1 per cent of GDP cap and constitutional constraints.'
 		},
 		{
 			year: 2008,
@@ -162,10 +204,16 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'Kuwait, Saudi Arabia and other Gulf states invested heavily in military modernisation following Iraq\'s invasion of Kuwait.'
 		},
 		{
-			year: 2009,
-			title: 'Oil-Fuelled Spending',
-			description: 'Regional military expenditure rose 7.1 per cent, driven by high oil revenues and the wars in Iraq and Afghanistan.',
-			context: 'Gulf states invested heavily in modernisation and arms imports. Saudi Arabia, the UAE and Algeria led regional increases as oil prices remained elevated.'
+			year: 1995,
+			title: 'Regional Buildup Diverges',
+			description: 'While world military spending continued to fall, Middle Eastern expenditure kept rising as Iran and Saudi Arabia accelerated procurement.',
+			context: 'Iranian spending had risen roughly 42 per cent in real terms since 1992 and Saudi spending around 13 per cent. The Oslo Accords and the Israel\u2013Jordan peace treaty had created expectations of a peace dividend that never materialised as the Israel\u2013Syria track stalled.'
+		},
+		{
+			year: 2000,
+			title: 'Second Intifada',
+			description: 'The outbreak of the Second Intifada drove three consecutive years of supplementary Israeli defence budgets and accelerated Gulf procurement.',
+			context: 'Israel\u2019s 2001 allocation was 7 per cent above its pre-Intifada baseline. Iran, Saudi Arabia, Oman and the UAE raised spending as oil prices climbed through 2000 and 2001.'
 		},
 		{
 			year: 2003,
@@ -213,10 +261,34 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			context: 'Many African states lost military aid from Cold War patrons. Civil conflicts in Somalia, Rwanda, and elsewhere continued despite declining conventional military budgets.'
 		},
 		{
+			year: 1994,
+			title: 'Rwanda and South African Transition',
+			description: 'The Rwandan genocide and South Africa\u2019s democratic transition reshaped the security landscape of eastern and southern Africa.',
+			context: 'Post-genocide Rwanda and Uganda emerged as major regional security actors. South Africa began consolidating the armed forces of the former homelands into the South African National Defence Force, while cutting cumulative defence spending by more than half between 1989 and 1998.'
+		},
+		{
+			year: 1998,
+			title: 'African Great War',
+			description: 'The Second Congo War and the Ethiopia\u2013Eritrea border war drew in at least seven states and reversed the continent\u2019s drawdown.',
+			context: 'Rwanda and Uganda backed anti-Kabila rebels in the Democratic Republic of the Congo, while Angola, Namibia and Zimbabwe backed the government. Ethiopia raised spending 8 per cent in real terms and Eritrea mobilised 200,000 troops; Angola\u2019s military burden reached 11\u201319 per cent of GDP.'
+		},
+		{
 			year: 2001,
 			title: 'Counterterrorism Era',
 			description: 'The war on terror brings renewed international military engagement in Africa.',
 			context: 'US and European counterterrorism programmes expanded across the Sahel and Horn of Africa. Several African states increased defence spending to combat Islamist insurgencies.'
+		},
+		{
+			year: 2002,
+			title: 'Peace-Driven Modernisation',
+			description: 'With the Angolan civil war ended and the Second Congo War winding down, armed-forces modernisation overtook active conflict as the main driver of African military spending.',
+			context: 'Russia wrote off roughly $10 billion of Ethiopia\u2019s Soviet-era debt, opening a new modernisation path. Nigeria signed a military-cooperation agreement with Russia through 2005, and Algerian spending kept rising despite the easing of its civil war.'
+		},
+		{
+			year: 2006,
+			title: 'Commodity-Funded Arms Deals',
+			description: 'Algeria signed a $10.5 billion arms contract with Russia as high oil prices funded major procurement across North Africa.',
+			context: 'Russia wrote off $4.74 billion in Algerian Soviet-era debt alongside the contract. Angola\u2019s spending kept rising on demobilisation and modernisation programmes running to 2015. Darfur had become one of the continent\u2019s worst crises, though much of the related spending went unreported.'
 		},
 		{
 			year: 2008,

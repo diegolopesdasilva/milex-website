@@ -4,7 +4,7 @@
 <section class="hero">
 	<div class="hero-content">
 		<h1>Global Military<br />Expenditures:<br /><span class="subtitle-line">A Visual History 1992–2024</span></h1>
-		<p class="byline">By <a href="https://diegolopesdasilva.github.io/website/" target="_blank" rel="noopener">Diego Lopes da Silva</a></p>
+		<p class="byline">By <a href="https://www.sipri.org/about/bios/dr-diego-lopes-da-silva" target="_blank" rel="noopener">Diego Lopes da Silva</a></p>
 	</div>
 </section>
 

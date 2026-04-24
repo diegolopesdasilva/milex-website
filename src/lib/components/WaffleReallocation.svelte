@@ -399,7 +399,7 @@
 		display: grid;
 		grid-template-columns: repeat(24, 1fr);
 		gap: 2px;
-		width: min(560px, 60vw);
+		width: min(460px, 50vw);
 		aspect-ratio: 24 / 25;
 	}
 

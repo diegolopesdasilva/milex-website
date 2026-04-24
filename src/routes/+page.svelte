@@ -179,12 +179,14 @@
 	let contextPositions: { x: number; year: number }[] = $state([]);
 	// Per-event stream edge positions for shape-following text (multiple y samples)
 	let contextShapes: { offsets: number[] }[] = $state([]);
+	// Per-event stream LEFT edge positions for shape-following text on the left side
+	let leftContextShapes: { offsets: number[] }[] = $state([]);
 
 	let currentObserver: IntersectionObserver | null = null;
 
 	function setupObserver() {
 		if (currentObserver) currentObserver.disconnect();
-		const cards = chartSection.querySelectorAll('.event-overlay-left [data-event-idx]');
+		const cards = chartSection.querySelectorAll('[data-event-idx]');
 		currentObserver = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
@@ -339,6 +341,20 @@
 		return padL + ((halfTotal + absExtent) / (2 * absExtent)) * plotW;
 	}
 
+	function getStreamLeftEdge(year: number, absExtent: number, padL: number, plotW: number, regionFilter: string | null): number {
+		const floorYear = Math.floor(year);
+		const ceilYear = Math.ceil(year);
+		const frac = year - floorYear;
+		const rowA = data.find(d => d.year === floorYear);
+		const rowB = data.find(d => d.year === ceilYear);
+		if (!rowA) return padL + plotW * 0.3;
+		const totalA = getYearTotal(rowA, regionFilter);
+		const totalB = rowB ? getYearTotal(rowB, regionFilter) : totalA;
+		const total = totalA + (totalB - totalA) * frac;
+		const halfTotal = total / 2;
+		return padL + ((-halfTotal + absExtent) / (2 * absExtent)) * plotW;
+	}
+
 	function measureStreamEdges() {
 		const chartCol = chartSection?.querySelector('.chart-column') as HTMLElement;
 		if (!chartCol) return;
@@ -350,6 +366,7 @@
 
 		const positions: { x: number; year: number }[] = [];
 		const shapes: { offsets: number[] }[] = [];
+		const leftShapes: { offsets: number[] }[] = [];
 
 		const pxPerYear = chartHeight / yearRange;
 		const lineHeightPx = 30;
@@ -361,15 +378,18 @@
 			positions.push({ x: baseEdge, year: event.year });
 
 			const offsets: number[] = [];
+			const leftOffsets: number[] = [];
 			for (let line = 0; line < numLines; line++) {
 				const sampleYear = event.year + line * lineHeightYears;
-				const edge = getStreamRightEdge(sampleYear, absExtent, padL, plotW, activeRegion);
-				offsets.push(edge);
+				offsets.push(getStreamRightEdge(sampleYear, absExtent, padL, plotW, activeRegion));
+				leftOffsets.push(getStreamLeftEdge(sampleYear, absExtent, padL, plotW, activeRegion));
 			}
 			shapes.push({ offsets });
+			leftShapes.push({ offsets: leftOffsets });
 		}
 		contextPositions = positions;
 		contextShapes = shapes;
+		leftContextShapes = leftShapes;
 	}
 
 	function updateRulerStyles(active: number) {
@@ -470,21 +490,41 @@
 				</div>
 			</div>
 
-			<!-- Left overlay: title + description (year is on the ruler) -->
-			<div class="event-overlay-left">
-				{#each events as event, i}
-					{@const pct = yearToPercent(event.year)}
+			<!-- Left overlay: title + description, follows stream silhouette via shape-outside -->
+			{#each events as event, i}
+				{@const pct = yearToPercent(event.year)}
+				{@const leftOffsets = leftContextShapes[i]?.offsets ?? []}
+				{@const gap = 40}
+				{@const lineH = 30}
+				{@const totalH = leftOffsets.length * lineH}
+				{@const cardW = leftOffsets.length > 0 ? Math.max(...leftOffsets) : 0}
+				{@const leftPolyPts = leftOffsets.length > 0
+					? `${cardW}px 0px, ${cardW}px ${totalH}px, `
+						+ [...leftOffsets].reverse().map((x, li) => {
+							const lineIdx = leftOffsets.length - 1 - li;
+							return `${Math.max(0, x - gap)}px ${lineIdx * lineH}px`;
+						}).join(', ')
+					: '0 0, 100% 0, 100% 100%, 0 100%'}
+				<div
+					class="event-card-left"
+					class:visible={visible[i]}
+					data-event-idx={i}
+					style:top="{pct}%"
+					style:left="0.5rem"
+					style:width="{Math.max(0, cardW - gap)}px"
+					style:max-height="{totalH}px"
+				>
 					<div
-						class="event-card-left"
-						class:visible={visible[i]}
-						data-event-idx={i}
-						style:top="{pct}%"
-					>
-						<h3 class="event-title">{event.title}</h3>
-						<p class="event-desc">{event.description}</p>
-					</div>
-				{/each}
-			</div>
+						class="left-shape-float"
+						style:width="{cardW}px"
+						style:height="{totalH}px"
+						style:shape-outside="polygon({leftPolyPts})"
+						style:clip-path="polygon({leftPolyPts})"
+					></div>
+					<h3 class="event-title">{event.title}</h3>
+					<p class="event-desc">{event.description}</p>
+				</div>
+			{/each}
 
 			<!-- Right overlay: context text, follows stream silhouette via shape-outside -->
 			{#each events as event, i}
@@ -791,30 +831,20 @@
 		overflow: hidden;
 	}
 
-	/* ── Left overlay: event cards ── */
-	.event-overlay-left {
+	/* ── Left overlay: event cards follow stream silhouette ── */
+	.event-card-left {
 		position: absolute;
-		top: 0;
-		left: 0.5rem;
-		bottom: 0;
-		width: clamp(160px, 22vw, 280px);
+		transform: translateY(-0.5em);
+		opacity: 0;
+		transition: opacity 0.7s ease;
 		pointer-events: none;
 		z-index: 5;
 		overflow: hidden;
 	}
 
-	.event-card-left {
-		position: absolute;
-		left: 0;
-		right: 0;
-		transform: translateY(-0.5em);
-		opacity: 0;
-		transition: opacity 0.7s ease;
-		pointer-events: auto;
-		background: rgba(255, 252, 239, 0.85);
-		backdrop-filter: blur(3px);
-		padding: 0.4rem 0.5rem;
-		border-radius: 4px;
+	.left-shape-float {
+		float: right;
+		background: transparent;
 	}
 
 	.event-card-left:first-of-type {
@@ -966,10 +996,6 @@
 
 		.tick-label {
 			right: 8px;
-		}
-
-		.event-overlay-left {
-			width: 180px;
 		}
 
 		.context-card {

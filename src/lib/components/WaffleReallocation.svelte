@@ -368,7 +368,7 @@
 
 	.interactive-area {
 		display: flex;
-		gap: var(--space-lg);
+		gap: var(--space-xl);
 		align-items: flex-start;
 		justify-content: center;
 		flex-wrap: wrap;
@@ -399,7 +399,7 @@
 		display: grid;
 		grid-template-columns: repeat(24, 1fr);
 		gap: 2px;
-		width: min(480px, 50vw);
+		width: min(560px, 60vw);
 		aspect-ratio: 24 / 25;
 	}
 
@@ -487,8 +487,8 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-sm);
-		min-width: 240px;
+		gap: var(--space-md);
+		min-width: 300px;
 		max-width: 440px;
 	}
 
@@ -635,7 +635,7 @@
 	}
 
 	/* ── Responsive ── */
-	@media (max-width: 600px) {
+	@media (max-width: 768px) {
 		.interactive-area {
 			flex-direction: column;
 			align-items: center;

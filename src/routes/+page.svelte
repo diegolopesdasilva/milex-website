@@ -8,6 +8,7 @@
 
 	import { events as globalEvents } from '$lib/data/events';
 	import { regionalEvents } from '$lib/data/regional-events';
+	import { worldNeeds } from '$lib/data/world-needs';
 	import { getPivotedData, regions } from '$lib/data/expenditure';
 
 	const data = getPivotedData();
@@ -181,17 +182,27 @@
 	let contextShapes: { offsets: number[] }[] = $state([]);
 	// Per-event stream LEFT edge positions for shape-following text on the left side
 	let leftContextShapes: { offsets: number[] }[] = $state([]);
+	// World-needs (alternating left/right) shape offsets per item
+	let worldNeedShapes: { side: 'left' | 'right'; offsets: number[] }[] = $state([]);
+	let worldNeedVisible: boolean[] = $state(worldNeeds.map(() => false));
 
 	let currentObserver: IntersectionObserver | null = null;
 
 	function setupObserver() {
 		if (currentObserver) currentObserver.disconnect();
-		const cards = chartSection.querySelectorAll('[data-event-idx]');
+		const eventCards = chartSection.querySelectorAll('[data-event-idx]');
+		const needCards = chartSection.querySelectorAll('[data-need-idx]');
 		currentObserver = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
-					const idx = Number((entry.target as HTMLElement).dataset.eventIdx);
-					visible[idx] = entry.isIntersecting;
+					const target = entry.target as HTMLElement;
+					if (target.dataset.eventIdx !== undefined) {
+						const idx = Number(target.dataset.eventIdx);
+						visible[idx] = entry.isIntersecting;
+					} else if (target.dataset.needIdx !== undefined) {
+						const idx = Number(target.dataset.needIdx);
+						worldNeedVisible[idx] = entry.isIntersecting;
+					}
 				}
 			},
 			{
@@ -199,9 +210,8 @@
 				threshold: 0
 			}
 		);
-		for (const card of cards) {
-			currentObserver.observe(card);
-		}
+		for (const card of eventCards) currentObserver.observe(card);
+		for (const card of needCards) currentObserver.observe(card);
 	}
 
 	onMount(() => {
@@ -390,6 +400,25 @@
 		contextPositions = positions;
 		contextShapes = shapes;
 		leftContextShapes = leftShapes;
+
+		// World-needs use a smaller window — fewer lines, alternating sides
+		const needNumLines = 12;
+		const needLineHeightPx = 32;
+		const needLineHeightYears = needLineHeightPx / pxPerYear;
+		const needShapes: { side: 'left' | 'right'; offsets: number[] }[] = [];
+		for (let i = 0; i < worldNeeds.length; i++) {
+			const need = worldNeeds[i];
+			const side: 'left' | 'right' = need.side;
+			const offsets: number[] = [];
+			for (let line = 0; line < needNumLines; line++) {
+				const sampleYear = need.year + line * needLineHeightYears;
+				offsets.push(side === 'right'
+					? getStreamRightEdge(sampleYear, absExtent, padL, plotW, activeRegion)
+					: getStreamLeftEdge(sampleYear, absExtent, padL, plotW, activeRegion));
+			}
+			needShapes.push({ side, offsets });
+		}
+		worldNeedShapes = needShapes;
 	}
 
 	function updateRulerStyles(active: number) {
@@ -555,6 +584,66 @@
 					<p class="context-text">{event.context}</p>
 				</div>
 			{/each}
+
+			<!-- World-needs annotations (only when no region is filtered) -->
+			{#if !activeRegion}
+				{#each worldNeeds as need, i}
+					{@const pct = yearToPercent(need.year)}
+					{@const shape = worldNeedShapes[i]}
+					{@const side = shape?.side ?? need.side}
+					{@const offsets = shape?.offsets ?? []}
+					{@const gap = 40}
+					{@const lineH = 32}
+					{@const totalH = offsets.length * lineH}
+					{#if side === 'right'}
+						{@const polyPts = offsets.length > 0
+							? offsets.map((x, li) => `${x + gap}px ${li * lineH}px`).join(', ')
+								+ `, ${offsets[offsets.length - 1] + gap}px ${totalH}px, 0px ${totalH}px, 0px 0px`
+							: '0px 0px, 0px 100%, 0px 100%'}
+						<div
+							class="need-card need-right"
+							class:visible={worldNeedVisible[i]}
+							data-need-idx={i}
+							style:top="{pct}%"
+							style:left="0"
+							style:width="calc(100% - 20px)"
+							style:max-height="{totalH}px"
+						>
+							<div
+								class="shape-float"
+								style:width="{Math.max(...offsets) + gap + 10}px"
+								style:height="{totalH}px"
+								style:shape-outside="polygon({polyPts})"
+								style:clip-path="polygon({polyPts})"
+							></div>
+							<p class="need-text">{need.text}</p>
+						</div>
+					{:else}
+						{@const leftPolyPts = offsets.length > 0
+							? offsets.map((x, li) => `${Math.max(0, x - gap)}px ${li * lineH}px`).join(', ')
+								+ `, ${Math.max(0, offsets[offsets.length - 1] - gap)}px ${totalH}px, 100% ${totalH}px, 100% 0px`
+							: '0 0, 100% 0, 100% 100%, 0 100%'}
+						<div
+							class="need-card need-left"
+							class:visible={worldNeedVisible[i]}
+							data-need-idx={i}
+							style:top="{pct}%"
+							style:left="0"
+							style:width="calc(100% - 20px)"
+							style:max-height="{totalH}px"
+						>
+							<div
+								class="left-shape-float"
+								style:width="100%"
+								style:height="{totalH}px"
+								style:shape-outside="polygon({leftPolyPts})"
+								style:clip-path="polygon({leftPolyPts})"
+							></div>
+							<p class="need-text">{need.text}</p>
+						</div>
+					{/if}
+				{/each}
+			{/if}
 		</div>
 	</section>
 
@@ -905,6 +994,37 @@
 		color: var(--text);
 		line-height: 30px;
 		margin: 0;
+	}
+
+	/* ── World-needs annotations (alternative funding contrast) ── */
+	.need-card {
+		position: absolute;
+		transform: translateY(-0.5em);
+		opacity: 0;
+		transition: opacity 0.7s ease;
+		pointer-events: none;
+		z-index: 4;
+		overflow: hidden;
+	}
+
+	.need-card.visible {
+		opacity: 1;
+	}
+
+	.need-text {
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		font-weight: 400;
+		color: #BB7154;
+		line-height: 32px;
+		margin: 0;
+		font-style: italic;
+	}
+
+	/* Left-side world-needs: right edge follows the stream silhouette, mirroring
+	   the right-side cards whose left edge follows the stream. */
+	.need-card.need-left .need-text {
+		text-align: right;
 	}
 
 	/* ── Ending section — width matched to stream tail ── */

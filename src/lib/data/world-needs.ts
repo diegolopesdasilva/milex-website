@@ -57,11 +57,11 @@ export const worldNeeds: WorldNeed[] = [
 	{
 		year: 2024.65,
 		side: 'left',
-		text: 'In the early 2020s, UN humanitarian appeals saw the largest absolute funding gaps on record — a $30 billion shortfall in 2023.'
+		text: 'In the early 2020s, UN humanitarian appeals saw a record $30 billion shortfall in 2023.'
 	},
 	{
-		year: 2024.7,
+		year: 2024.65,
 		side: 'right',
-		text: 'By 2024, OECD-DAC aid fell 23 per cent — the steepest one-year drop on record — as 295 million people faced acute food insecurity.'
+		text: 'By 2024, OECD-DAC aid fell 23 per cent — the steepest one-year drop on record.'
 	}
 ];

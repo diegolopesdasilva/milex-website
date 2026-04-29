@@ -340,9 +340,9 @@
 		font-size: clamp(1.15rem, 2.2vw, 1.5rem);
 		font-weight: 300;
 		color: var(--text-muted);
-		line-height: 1.75;
+		line-height: 1.85;
 		text-align: justify;
-		margin: 0 auto 4rem;
+		margin: 0 0 1.5rem;
 		max-width: 100%;
 	}
 

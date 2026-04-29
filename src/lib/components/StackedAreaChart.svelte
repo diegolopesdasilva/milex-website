@@ -63,9 +63,9 @@
 		return [-abs * 1.5, abs * 1.5];
 	});
 
-	// Reverse yDomain so LayerCake maps 1992→top, 2024→bottom
+	// Reverse yDomain so LayerCake maps 1992→top, 2025→bottom
 	let yDomain = $derived.by(() => {
-		if (data.length === 0) return [2024, 1992];
+		if (data.length === 0) return [2025, 1992];
 		return [data[data.length - 1].year, data[0].year];
 	});
 

@@ -3,9 +3,9 @@
 	const TOTAL_SQUARES = 600;
 	const COLS = 24;
 	const SAVINGS_SQUARES = 21;
-	const TOTAL_MILEX_B = 2718;
-	const SAVINGS_B = TOTAL_MILEX_B * 0.035; // ~95.1B
-	const PER_SQUARE_B = SAVINGS_B / SAVINGS_SQUARES; // ~4.53B per savings square
+	const TOTAL_MILEX_B = 2887;
+	const SAVINGS_B = TOTAL_MILEX_B * 0.035; // ~101.0B
+	const PER_SQUARE_B = SAVINGS_B / SAVINGS_SQUARES; // ~4.81B per savings square
 
 	const impacts = {
 		health: {

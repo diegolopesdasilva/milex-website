@@ -46,39 +46,39 @@
 		return '$' + Math.round(b) + ' billion';
 	}
 
-	// Regional ending data from SIPRI Fact Sheet 2025
+	// Regional ending data from SIPRI Fact Sheet 2026 (covering 2025 data)
 	const endingData: Record<string, { figure: string; text1: string; text2: string }> = {
 		'Americas': {
-			figure: '$1100 billion',
-			text1: 'Military expenditure in the Americas totalled $1,100 billion in 2024, an increase of 5.8 per cent from 2023 and of 19 per cent from 2015. The Americas accounted for 40 per cent of global military spending ($2,718 billion). North American military spending rose by 5.7 per cent to $1,027 billion, driven primarily by the United States, whose $997 billion budget was 37 per cent of the world total.',
-			text2: 'Military spending in Central America and the Caribbean more than doubled between 2015 and 2024, driven almost entirely by Mexico, whose spending went up by 39 per cent in 2024 as it boosted funding to the Guardia Nacional. South American spending remained stable at $53.6 billion. In 2024 Guyana recorded the largest annual percentage increase in the world, 78 per cent, amid tensions with Venezuela.'
+			figure: '$1065 billion',
+			text1: 'Military spending in the Americas fell by 6.6 per cent to $1,065 billion in 2025, but this was still 13 per cent higher than in 2016. The Americas accounted for 37 per cent of global military spending ($2,887 billion). Trends in the region are dominated by developments in North America, with the USA alone accounting for 90 per cent of the region\u2019s spending in 2025.',
+			text2: 'US military expenditure was $954 billion in 2025, 7.5 per cent lower than in 2024 but still 11 per cent higher than in 2016. The decline was mainly due to a sharp reduction in financial military assistance overseas. Mexico\u2019s spending dropped by a third in 2025 to $13.6 billion. Brazil increased its military expenditure by 13 per cent to $23.9 billion, while Guyana\u2019s spending rose 16 per cent amid tensions with Venezuela.'
 		},
 		'Europe': {
-			figure: '$693 billion',
-			text1: 'Total military spending in Europe rose by 17 per cent to $693 billion in 2024, up by 83 per cent from 2015. All European countries increased their military spending except Malta. Europe accounted for 26 per cent of global military spending ($2,718 billion). The Russia\u2013Ukraine war, now in its third year, continued to drive spending upward, pushing European expenditure beyond levels recorded at the end of the Cold War.',
-			text2: 'Military expenditure in Central and Western Europe grew by 14 per cent to $472 billion. Germany rose 28 per cent to $88.5 billion, becoming the biggest spender in Central and Western Europe for the first time since reunification. Poland\u2019s spending went up by 31 per cent to $38 billion. Eastern European spending rose 24 per cent to $221 billion, the highest since the Soviet break-up, driven by Russia and Ukraine.'
+			figure: '$864 billion',
+			text1: 'Total military expenditure in Europe reached $864 billion in 2025, an increase of 14 per cent compared with 2024 and the highest level of European spending ever recorded by SIPRI. Over the decade 2016\u201325, military spending in the region doubled (+102 per cent). Europe accounted for 30 per cent of global military spending ($2,887 billion). The increase reflects growing geopolitical instability, mainly related to the Russia\u2013Ukraine war and uncertainty over US security guarantees.',
+			text2: 'Russia\u2019s military expenditure reached an estimated $190 billion (+5.9 per cent), with a military burden of 7.5 per cent of GDP. Ukraine\u2019s spending grew 20 per cent to $84.1 billion, or 40 per cent of its GDP. Germany became the fourth biggest spender globally, reaching $114 billion (+24 per cent). Spain\u2019s military spending increased by 50 per cent to $40.2 billion, while Poland (+23 per cent) and Italy (+20 per cent) also recorded sharp rises.'
 		},
 		'Asia & Oceania': {
-			figure: '$629 billion',
-			text1: 'Total military spending in Asia and Oceania amounted to $629 billion in 2024, up by 6.3 per cent from 2023 and by 46 per cent from 2015, continuing an uninterrupted upward trend dating back to at least 1989. Asia and Oceania accounted for 23 per cent of global military spending ($2,718 billion). The year-on-year increase in 2024 was the biggest since 2009, reflecting heightening tensions, especially in East Asia.',
-			text2: 'East Asian military expenditure increased by 7.8 per cent to $433 billion. China allocated an estimated $314 billion, up 7.0 per cent \u2014 the 30th consecutive year of growth and the longest unbroken streak in the SIPRI database. Japan\u2019s annual increase of 21 per cent was the largest since 1952. Myanmar\u2019s spending went up by 66 per cent as internal conflicts escalated.'
+			figure: '$681 billion',
+			text1: 'The combined military expenditure of states in Asia and Oceania in 2025 was $681 billion, an increase of 8.1 per cent from 2024 and of 48 per cent from 2016. This continued an uninterrupted trend dating back to at least 1989. Asia and Oceania accounted for 24 per cent of global military spending ($2,887 billion). The increase in 2025 represented the biggest year-on-year rise since 2009.',
+			text2: 'China allocated an estimated $336 billion to its military in 2025 (+7.4 per cent), the largest year-on-year increase in the past decade. Chinese military expenditure has now increased each year for 31 consecutive years\u2014the longest streak of any country in the SIPRI database. Japan\u2019s spending rose 9.7 per cent to $62.2 billion, India\u2019s grew 8.9 per cent to $92.1 billion, and Taiwan\u2019s rose 14 per cent to $18.2 billion\u2014its largest year-on-year increase since at least 1988.'
 		},
 		'Middle East': {
-			figure: '$243 billion',
-			text1: 'Military expenditure in the Middle East reached an estimated $243 billion in 2024, an increase of 15 per cent from 2023 and of 19 per cent over the decade 2015\u201324. The Middle East accounted for 9 per cent of global military spending ($2,718 billion). The wars in Gaza and the wider region were key drivers of increased spending in 2024.',
-			text2: 'Israel\u2019s military expenditure surged by 65 per cent in 2024, the largest increase among the top 15 spenders globally, raising its military burden to 8.8 per cent of GDP. Saudi Arabia remained the largest spender in the region at an estimated $80.3 billion, with a military burden of 7.3 per cent of GDP. Iran\u2019s spending declined by 10 per cent.'
+			figure: '$218 billion',
+			text1: 'Military expenditure in the Middle East was an estimated $218 billion in 2025. It went up only marginally in 2025 (+0.1 per cent) but increased by 36 per cent over the decade 2016\u201325, in the context of recurring regional conflicts and crises. The Middle East accounted for 7.6 per cent of global military spending ($2,887 billion).',
+			text2: 'Saudi Arabia remained the region\u2019s largest spender at an estimated $83.2 billion (+1.4 per cent). Israel\u2019s military expenditure decreased by 4.9 per cent to $48.3 billion, reflecting reduced intensity of the war in Gaza after the January 2025 ceasefire, but spending remained 120 per cent higher than in 2016. T\u00fcrkiye\u2019s expenditure reached $30.0 billion (+7.2 per cent), while Iran\u2019s decreased for the second consecutive year to $7.4 billion amid 42 per cent annual inflation.'
 		},
 		'Africa': {
-			figure: '$52 billion',
-			text1: 'Military expenditure in Africa totalled $52.1 billion in 2024, 3.0 per cent more than in 2023 and 11 per cent more than in 2015. Africa accounted for 1.9 per cent of global military spending ($2,718 billion). North African spending reached $30.2 billion, up 8.8 per cent from 2023, driven by Algeria and Morocco, which accounted for 90 per cent of the subregional total.',
-			text2: 'Sub-Saharan African spending totalled $21.9 billion, down 3.2 per cent from 2023 and 13 per cent from 2015, primarily due to falling spending in South Africa, Nigeria and Ethiopia. Mali, Burkina Faso and Niger, all under military junta rule, allocated $2.4 billion to their militaries. Chad increased its spending by 43 per cent after ending military cooperation with France.'
+			figure: '$58 billion',
+			text1: 'Military expenditure in Africa grew for the third consecutive year in 2025 to reach $58.2 billion, 8.5 per cent higher than in 2024 and 45 per cent higher than in 2016. Africa accounted for 2.0 per cent of global military spending ($2,887 billion). North African spending totalled $35.0 billion, 9.3 per cent more than in 2024 and 67 per cent more than in 2016, driven by Algeria and Morocco.',
+			text2: 'Algeria\u2019s spending rose by 11 per cent to $25.4 billion, making it by far the biggest spender in Africa. Sub-Saharan Africa\u2019s expenditure totalled $23.3 billion (+7.4 per cent), driven by higher spending in Nigeria, whose expenditure rose 55 per cent to $2.1 billion amid worsening security conditions. South Africa allocated $3.2 billion (-1.2 per cent), while military spending in the Democratic Republic of the Congo increased 20 per cent to $1.2 billion.'
 		}
 	};
 
 	const globalEndingData = {
-		figure: '$2718 billion',
-		text1: 'World military expenditure rose to $2718 billion in 2024, meaning that spending has increased every year for a full decade, going up by 37 per cent between 2015 and 2024. The 9.4 per cent increase in 2024 was the steepest year-on-year rise since at least 1988. The global military burden\u2014the share of the world\u2019s gross domestic product (GDP) devoted to military expenditure\u2014increased to 2.5 per cent in 2024. Average military expenditure as a share of government expenditure rose to 7.1 per cent in 2024 and world military spending per person was the highest since 1990, at $334.',
-		text2: 'For the second year in a row, military expenditure increased in all five of the world\u2019s geographical regions, reflecting heightened geopolitical tensions across the globe. The decade-long growth in global spending can be partly attributed to spending increases in Europe, largely driven by the ongoing Russia\u2013Ukraine war, and in the Middle East, driven by the war in Gaza and wider regional conflicts. Many countries have also committed to raising military spending, which will lead to further global increases in the coming years.'
+		figure: '$2887 billion',
+		text1: 'World military expenditure rose by 2.9 per cent in real terms to $2,887 billion in 2025, marking the 11th consecutive year of growth and the highest spending level ever recorded by SIPRI. Global spending has gone up by 41 per cent over the past decade (2016\u201325). The world\u2019s military burden\u2014the share of global GDP devoted to military expenditure\u2014went up from 2.4 per cent in 2024 to 2.5 per cent in 2025. Average military expenditure as a share of government expenditure was 6.9 per cent and world spending per person stood at $352.',
+		text2: 'Global military expenditure rose in 2025 despite a drop in spending by the United States, the world\u2019s biggest spender. A sharp increase in European spending and continued growth in Asia and Oceania were more than enough to offset the decrease in US spending. World military expenditure excluding the USA grew by 9.2 per cent in 2025. The five biggest spenders\u2014the United States, China, Russia, Germany and India\u2014together accounted for 58 per cent of world military spending.'
 	};
 
 	let currentEnding = $derived(

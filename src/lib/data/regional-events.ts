@@ -48,7 +48,7 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2013,
 			title: 'Sequestration Bites',
 			description: 'US spending fell 7.8 per cent under the Budget Control Act \u2014 the steepest annual cut in the post-9/11 era \u2014 while Latin American spending continued to grow.',
-			context: 'Americas military expenditure fell 6.8 per cent overall in 2013. The US decline was driven by withdrawal from Afghanistan and mandatory sequestration cuts, while Honduras and Nicaragua increased spending to combat drug cartels.'
+			context: 'Americas military expenditure fell 7.0 per cent overall in 2013. The US decline was driven by withdrawal from Afghanistan and mandatory sequestration cuts, while Honduras and Nicaragua increased spending to combat drug cartels.'
 		},
 		{
 			year: 2017,
@@ -98,8 +98,8 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 		{
 			year: 2012,
 			title: 'Austerity Deepens',
-			description: 'Western and Central European spending fell 1.8 per cent, continuing post-crisis cuts that had shrunk budgets by more than 10 per cent since 2008.',
-			context: 'Ten countries \u2014 including Greece, Spain and the UK \u2014 had cut military budgets by more than 10 per cent since 2008. Eastern Europe bucked the trend, rising 7.0 per cent.'
+			description: 'Western and Central European spending fell 3.4 per cent, continuing post-crisis cuts that had shrunk budgets across much of the region since 2008.',
+			context: 'Ten countries \u2014 including Greece, Spain and the UK \u2014 had cut military budgets by more than 10 per cent since 2008. Eastern Europe bucked the trend, rising 14.9 per cent.'
 		},
 		{
 			year: 2014,
@@ -111,18 +111,18 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2017,
 			title: 'Trend Reversal',
 			description: 'Western European spending rose for the third consecutive year, up 1.7 per cent, driven by the perceived Russian threat and the fight against ISIS.',
-			context: 'Central Europe had the largest subregional increase at 12 per cent. The sustained growth marked a decisive break from the post-2008 austerity era.'
+			context: 'Central Europe recorded a strong subregional increase of 7.9 per cent. The sustained growth marked a decisive break from the post-2008 austerity era.'
 		},
 		{
 			year: 2022,
 			title: 'Russia\u2013Ukraine War',
 			description: 'The full-scale invasion of Ukraine causes a historic surge in European military spending.',
-			context: 'European spending rose 13 per cent in 2022, with 39 of 43 European countries increasing budgets. Germany announced a \u20ac100 billion special defence fund within days of the invasion.'
+			context: 'European spending rose 13.8 per cent in 2022, with 39 of 43 European countries increasing budgets. Germany announced a \u20ac100 billion special defence fund within days of the invasion.'
 		},
 		{
 			year: 2023,
 			title: 'Europe Rearms',
-			description: 'European military spending rose 16 per cent to $588 billion, with 39 of 43 countries increasing budgets.',
+			description: 'European military spending rose 14.8 per cent, with 39 of 43 countries increasing budgets.',
 			context: 'Ten NATO European members reached the 2 per cent of GDP target \u2014 the highest number since the target was set in 2014. Poland announced plans to raise its burden to 4 per cent of GDP.'
 		}
 	],
@@ -180,7 +180,7 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2019,
 			title: 'India Becomes Third-Largest Spender',
 			description: 'Indian military expenditure reached $71.1 billion, overtaking Russia for the first time as the world\u2019s third-largest spender.',
-			context: 'Spending rose 3.6 per cent across the region in 2019. China\u2019s estimated expenditure reached $261 billion \u2014 85 per cent higher than in 2010.'
+			context: 'Spending rose 5.1 per cent across the region in 2019. China\u2019s estimated expenditure reached $261 billion \u2014 85 per cent higher than in 2010.'
 		},
 		{
 			year: 2022,
@@ -192,7 +192,7 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2023,
 			title: 'Japan\u2019s Historic Buildup',
 			description: 'Japanese spending rose 11 per cent \u2014 the largest year-on-year increase since 1972 \u2014 as China\u2019s spending grew for the 34th consecutive year.',
-			context: 'Chinese military expenditure reached $296 billion in 2023. Regional spending rose 4.4 per cent overall, with major increases also in South Korea and the Philippines.'
+			context: 'Chinese military expenditure reached $296 billion in 2023. Regional spending rose 4.9 per cent overall, with major increases also in South Korea and the Philippines.'
 		}
 	],
 
@@ -237,7 +237,7 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2019,
 			title: 'Saudi Spending Plunges',
 			description: 'Saudi Arabia\u2019s military spending fell 16 per cent, dropping from third- to fifth-largest spender globally.',
-			context: 'The Middle East as a whole fell 7.5 per cent. The Saudi decline reflected both lower oil revenues and a reassessment of the costly Yemen intervention.'
+			context: 'The Middle East as a whole fell 4.7 per cent. The Saudi decline reflected both lower oil revenues and a reassessment of the costly Yemen intervention.'
 		},
 		{
 			year: 2022,
@@ -248,8 +248,8 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 		{
 			year: 2023,
 			title: 'Israel\u2013Hamas War',
-			description: 'The conflict in Gaza drove a 24 per cent increase in Israeli military spending. The Middle East rose 9.0 per cent to $200 billion.',
-			context: 'It was the first major regional increase in years. Saudi Arabia also raised spending as high oil prices enabled larger budgets across the Gulf.'
+			description: 'The conflict in Gaza drove a 24 per cent increase in Israeli military spending. The Middle East rose 9.4 per cent \u2014 its first major regional increase in years.',
+			context: 'Saudi Arabia also raised spending as high oil prices enabled larger budgets across the Gulf, while T\u00fcrkiye and the UAE accelerated their own modernisation drives.'
 		}
 	],
 
@@ -294,12 +294,12 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2008,
 			title: 'Resource-Driven Growth',
 			description: 'High commodity prices enable rapid military spending increases across resource-rich Africa.',
-			context: 'African military spending reached $27.4 billion in 2009, a 6.5 per cent real increase. Oil revenues funded modernisation in Algeria, Angola, Nigeria and Libya.'
+			context: 'African military spending rose 5.4 per cent in real terms in 2009. Oil revenues funded modernisation in Algeria, Angola, Nigeria and Libya.'
 		},
 		{
 			year: 2013,
 			title: 'Africa Leads Growth',
-			description: 'African military expenditure rose 8.3 per cent \u2014 the highest regional increase globally \u2014 with Ghana up 129 per cent and Angola up 36 per cent.',
+			description: 'African military expenditure rose 10.2 per cent \u2014 the highest regional increase globally \u2014 with Ghana up 129 per cent and Angola up 36 per cent.',
 			context: 'High commodity prices and growing security threats fuelled spending across the continent. The Central African Republic and Mali conflicts also drove increases in neighbouring states.'
 		},
 		{
@@ -311,19 +311,19 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 		{
 			year: 2015,
 			title: 'Oil Price Crash',
-			description: 'African spending fell 5.3 per cent \u2014 the first decline after years of increases \u2014 as collapsing oil prices forced cuts in Angola, South Sudan and other oil-dependent states.',
+			description: 'African spending fell 3.6 per cent \u2014 the first decline after years of increases \u2014 as collapsing oil prices forced cuts in Angola, South Sudan and other oil-dependent states.',
 			context: 'The sharp fall in oil prices from late 2014 hit African budgets hard. Countries that had funded military modernisation through commodity revenues were forced to reverse course.'
 		},
 		{
 			year: 2022,
 			title: 'Sahel Conflicts Deepen',
 			description: 'Ongoing conflicts in the Sahel and military coups reshape African defence spending patterns.',
-			context: 'African spending fell 5.3 per cent in 2022 amid poor economic performance, then rebounded 22 per cent in 2023, boosted by oil revenues and ongoing conflicts in Burkina Faso and elsewhere.'
+			context: 'African spending fell 1.5 per cent in 2022 amid poor economic performance, then rebounded 24.7 per cent in 2023, boosted by oil revenues and ongoing conflicts in Burkina Faso and elsewhere.'
 		},
 		{
 			year: 2023,
 			title: 'Africa Surges',
-			description: 'African military expenditure rose 22 per cent to $51.6 billion \u2014 the most significant rise of any region.',
+			description: 'African military expenditure rose 24.7 per cent \u2014 the most significant rise of any region.',
 			context: 'Conflicts in the Democratic Republic of the Congo and across the Sahel, combined with recovering oil revenues, drove the increase. Algeria and Nigeria accounted for a large share of the growth.'
 		}
 	]

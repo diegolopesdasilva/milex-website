@@ -60,7 +60,7 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2022,
 			title: 'Ukraine Aid Surge',
 			description: 'The US provides tens of billions in military aid to Ukraine while maintaining a historically high defence budget.',
-			context: 'A $35.7 billion Ukraine-related supplemental budget was approved in 2023, including $25.4 billion in direct military aid. US spending reached $916 billion.'
+			context: 'A $35.7 billion Ukraine-related supplemental budget was approved in 2023, including $25.4 billion in direct military aid. US spending was $877 billion in 2022 and rose to $916 billion in 2023.'
 		}
 	],
 
@@ -156,7 +156,7 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 			year: 2006,
 			title: 'China Overtakes Japan',
 			description: 'China surpassed Japan to become the largest military spender in Asia and moved up to fourth place globally.',
-			context: 'Chinese spending had risen roughly 195 per cent in real terms over the previous decade. North Korea\u2019s July 2006 missile tests and October 2006 nuclear test re-opened the Japanese debate on its 1 per cent of GDP cap and constitutional constraints.'
+			context: 'Chinese spending had risen roughly 165 per cent in real terms over the previous decade. North Korea\u2019s July 2006 missile tests and October 2006 nuclear test re-opened the Japanese debate on its 1 per cent of GDP cap and constitutional constraints.'
 		},
 		{
 			year: 2008,
@@ -191,7 +191,7 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 		{
 			year: 2023,
 			title: 'Japan\u2019s Historic Buildup',
-			description: 'Japanese spending rose 11 per cent \u2014 the largest year-on-year increase since 1972 \u2014 as China\u2019s spending grew for the 34th consecutive year.',
+			description: 'Japanese spending rose 11 per cent \u2014 the largest year-on-year increase since 1972 \u2014 as China\u2019s spending grew for the 29th consecutive year.',
 			context: 'Chinese military expenditure reached $296 billion in 2023. Regional spending rose 4.9 per cent overall, with major increases also in South Korea and the Philippines.'
 		}
 	],
@@ -230,8 +230,8 @@ export const regionalEvents: Record<string, HistoricalEvent[]> = {
 		{
 			year: 2017,
 			title: 'Oil Price Contraction',
-			description: 'Low oil prices force Gulf states to cut military budgets for the first time in years.',
-			context: 'Saudi Arabia\'s spending fell 16 per cent in 2017 as oil revenues declined. The cuts were temporary — spending rebounded as oil prices recovered.'
+			description: 'The steep mid-2010s oil-price collapse forced Gulf states to cut military budgets for the first time in years.',
+			context: 'Saudi Arabian spending had fallen 26 per cent between 2014 and 2016 amid the oil-price collapse — the deepest contraction of the decade. By 2017, with oil revenues recovering, Saudi spending rose 9.2 per cent.'
 		},
 		{
 			year: 2019,

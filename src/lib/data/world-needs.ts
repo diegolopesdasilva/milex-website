@@ -62,6 +62,6 @@ export const worldNeeds: WorldNeed[] = [
 	{
 		year: 2024.65,
 		side: 'right',
-		text: 'By 2024, OECD-DAC aid fell 23 per cent — the steepest one-year drop on record.'
+		text: 'Preliminary 2025 figures showed OECD-DAC aid had fallen 23 per cent — the steepest one-year drop on record.'
 	}
 ];

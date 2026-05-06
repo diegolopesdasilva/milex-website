@@ -628,7 +628,7 @@
 							class:visible={worldNeedVisible[i]}
 							data-need-idx={i}
 							style:top="{pct}%"
-							style:left="0"
+							style:left="0.5rem"
 							style:width="calc(100% - 20px)"
 							style:max-height="{totalH}px"
 						>

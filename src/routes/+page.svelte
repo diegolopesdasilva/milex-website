@@ -678,7 +678,12 @@
 	</div>
 
 	<footer>
-		<p>Data: SIPRI Military Expenditure Database. All figures in constant 2023 USD.</p>
+		<p class="methodology">
+			Data: <a href="https://www.sipri.org/databases/milex" target="_blank" rel="noopener">SIPRI Military Expenditure Database</a>.
+			Figures for spending in 2025 are given in current 2025 US dollars.
+			Figures for relative increases or decreases in military spending — often described as changes in &lsquo;real terms&rsquo;
+			or adjusted for inflation — are expressed in constant 2024 US dollars.
+		</p>
 
 		<div class="acknowledgement">
 			<p>
@@ -1066,6 +1071,27 @@
 		font-family: var(--font-sans);
 		font-weight: 400;
 		letter-spacing: 0.02em;
+	}
+
+	footer .methodology {
+		max-width: 650px;
+		margin: 0 auto;
+		font-size: 0.95rem;
+		font-weight: 300;
+		line-height: 1.75;
+		color: var(--text-muted);
+		text-align: justify;
+	}
+
+	footer .methodology a {
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		transition: color 0.2s ease;
+	}
+
+	footer .methodology a:hover {
+		color: var(--text);
 	}
 
 	footer .closing {

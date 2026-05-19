@@ -649,8 +649,6 @@
 		style:margin-right="{streamTailLeft > 0 ? 'auto' : 'auto'}"
 	>
 		<p class="ending-figure" style:font-size={figureFontSize}>{currentEnding.figure}</p>
-		<p class="ending-text">{currentEnding.text1}</p>
-		<p class="ending-text" style="margin-top: 1.5rem;">{currentEnding.text2}</p>
 	</section>
 
 	<!-- Defence Dividend section -->

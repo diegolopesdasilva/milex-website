@@ -457,13 +457,7 @@
 			While military expenditure is primarily intended to fund the armed forces and secure
 			sovereignty, it has effects that extend far beyond a country's national security. It is
 			known to affect economic growth, development, income inequality and political institutions,
-			among many others. One of the most serious and complex impacts of military expenditure is
-			on international stability. As a country increases its military expenditure, others may
-			perceive it as a threat and respond in kind, which may prompt the first country to
-			counter-respond with further increases — setting off a spiral or traditional security
-			dilemma. This predicament can lead to increasingly higher military expenditure at the
-			expense of investment in other areas, but with the paradoxical result of more insecurity,
-			not less as initially intended.
+			among many others.
 		</p>
 		<p>
 			Given its far-reaching impacts on international security and development, the

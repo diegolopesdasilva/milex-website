@@ -216,11 +216,11 @@
 			that military expenditures contribute to economic growth.
 		</p>
 		<p class="section-intro">
-			Researchers have been studying this link with econometric methods since at least the late 1970s.
+			Researchers have been studying this link with econometric methods since at least the early 1970s.
 			Initially, it seemed that military expenditures did indeed contribute to economic growth. However,
-			over time results began to weaken and eventually reverse. The changes are mostly due to more data
-			and more sophisticated statistical methods. Nowadays, most of the evidence points to a null or
-			negative effect of military expenditures on economic growth.
+			over time results began to weaken and eventually reverse. The changes are mostly due to more and
+			better data, and more sophisticated statistical methods. Nowadays, most of the evidence points to
+			a null or negative effect of military expenditures on economic growth.
 		</p>
 		<p class="section-intro">
 			The two figures below plot the average effect size from each of the 32 studies in Alptekin &amp;

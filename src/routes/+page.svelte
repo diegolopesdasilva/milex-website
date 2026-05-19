@@ -457,7 +457,7 @@
 			While military expenditure is primarily intended to fund the armed forces and secure
 			sovereignty, it has effects that extend far beyond a country's national security. It is
 			known to affect economic growth, development, income inequality and political institutions,
-			among many others.
+			for example.
 		</p>
 		<p>
 			Given its far-reaching impacts on international security and development, the

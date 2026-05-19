@@ -223,8 +223,9 @@
 			a null or negative effect of military expenditures on economic growth.
 		</p>
 		<p class="section-intro">
-			The two figures below plot the average effect size from each of the 32 studies in Alptekin &amp;
-			Levine's (2012) meta-analysis. The trend is quite clear, as the strength and signal of the
+			The two figures below plot the average effect size from each of the 32 studies in
+			<a href="https://www.sciencedirect.com/science/article/abs/pii/S0176268012000432" class="source-link" target="_blank" rel="noopener">Alptekin &amp; Levine's (2012)</a>
+			meta-analysis. The trend is quite clear, as the strength and signal of the
 			effect weaken and change over time.
 		</p>
 		<p class="section-intro">
